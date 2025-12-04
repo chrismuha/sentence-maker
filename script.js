@@ -12,6 +12,7 @@ const shortcutHint = document.getElementById("shortcutHint");
 let shortcutKey = null; // normalized (lowercase) key name
 let pendingShortcut = null;
 const pressedKeys = new Set();
+let notAllowedTimeout = null;
 
 breakBtn.addEventListener("click", breakSentences);
 settingsBtn.addEventListener("click", openSettings);
@@ -95,15 +96,20 @@ function captureShortcut(event) {
 
   if (!normalized || normalized === "__pending_combo__" || normalized === "__modifier_only__") {
     const previous = pendingShortcut;
+    clearTimeout(notAllowedTimeout);
     shortcutInput.value = "Not allowed";
-    setTimeout(() => {
-      shortcutInput.value = previous ? formatKey(previous) : "";
+    notAllowedTimeout = setTimeout(() => {
+      if (pendingShortcut === previous) {
+        shortcutInput.value = previous ? formatKey(previous) : "";
+      }
     }, 800);
     return;
   }
 
+  clearTimeout(notAllowedTimeout);
   pendingShortcut = normalized;
   shortcutInput.value = formatKey(pendingShortcut);
+  pressedKeys.clear();
 }
 
 function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: heldKeys } = {}) {
@@ -118,6 +124,7 @@ function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: h
 
   if (key === "shift") return "__modifier_only__"; // block Shift+Shift or Shift alone
   if (key === "control" || key === "meta" || key === "alt") return "__modifier_only__";
+  if (key.startsWith("arrow") || key === "tab") return "";
 
   if (rawKey === " " || rawKey === "spacebar" || rawKey === "space") {
     key = "space";
