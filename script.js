@@ -87,7 +87,7 @@ function captureShortcut(event) {
   event.preventDefault();
   const normalized = normalizeKeyEvent(event, { pressedKeys });
 
-  if (normalized === "__pending_combo__") {
+  if (normalized === "__pending_combo__" || normalized === "__modifier_only__") {
     return;
   }
 
@@ -105,17 +105,29 @@ function captureShortcut(event) {
 }
 
 function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: heldKeys } = {}) {
-  const key = (event.key || "").toLowerCase();
-  const hasModifier = event.ctrlKey || event.metaKey || event.altKey || event.shiftKey;
+  const code = (event.code || "").toLowerCase();
+  let key = (event.key || "").toLowerCase();
+  const hasSystemModifier = event.ctrlKey || event.metaKey || event.altKey;
+  const hasModifier = hasSystemModifier || event.shiftKey;
   const isAlphaNum = key.length === 1 && /[a-z0-9]/.test(key);
 
-  if (key === "shift") return ""; // block Shift+Shift or Shift alone
-  if (key === "control" || key === "meta" || key === "alt") return "";
+  if (key === "shift") return "__modifier_only__"; // block Shift+Shift or Shift alone
+  if (key === "control" || key === "meta" || key === "alt") return "__modifier_only__";
+
+  // Option/Cmd sometimes produce symbols; fallback to code to keep base key
+  if ((event.altKey || event.metaKey) && key.length === 1 && !/[a-z0-9]/.test(key)) {
+    if (code.startsWith("key") && code.length === 4) {
+      key = code.slice(3);
+    } else if (code.startsWith("digit") && code.length === 6) {
+      key = code.slice(5);
+    }
+  }
 
   const isSymbol = key.length === 1 && !/[a-z0-9]/.test(key);
   if (isSymbol) return "";
 
-  if (heldKeys && heldKeys.size >= 2) {
+  // Only allow dual-character combos when no system modifier is held
+  if (!hasSystemModifier && heldKeys && heldKeys.size >= 2) {
     const filtered = Array.from(heldKeys)
       .map(k => (k || "").toLowerCase())
       .filter(k => k.length === 1 && /[a-z0-9]/.test(k));
@@ -126,10 +138,10 @@ function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: h
     }
   }
 
-  if (disallowPlainAlphaNum && isAlphaNum && heldKeys && heldKeys.size === 1) {
+  if (!hasSystemModifier && disallowPlainAlphaNum && isAlphaNum && heldKeys && heldKeys.size === 1) {
     return "__pending_combo__";
   }
-  if (disallowPlainAlphaNum && isAlphaNum && !hasModifier) return "";
+  if (!hasSystemModifier && disallowPlainAlphaNum && isAlphaNum && !hasModifier) return "";
 
   const parts = [];
   if (event.metaKey) parts.push("meta");
