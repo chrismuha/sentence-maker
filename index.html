@@ -5,9 +5,27 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <textarea id="editor" placeholder="Type your text here..."></textarea>
-  <br>
-  <button id="breakBtn">Break</button>
+  <div class="app">
+    <textarea id="editor" placeholder="Type your text here..."></textarea>
+    <div class="controls">
+      <button id="breakBtn">Break</button>
+      <button id="settingsBtn" type="button">Settings</button>
+    </div>
+    <p id="shortcutHint" class="hint">No keyboard shortcut assigned.</p>
+  </div>
+
+  <div id="backdrop" class="backdrop hidden"></div>
+  <div id="settingsPanel" class="settings hidden" role="dialog" aria-modal="true">
+    <h2>Shortcut</h2>
+    <label for="shortcutInput">Press a key to trigger Break</label>
+    <input id="shortcutInput" type="text" placeholder="Press a key..." readonly />
+    <p class="hint">Letters/numbers alone are not allowed. Symbols and Shift+Shift are blocked. Save an empty value to clear.</p>
+    <div class="settings-actions">
+      <button id="saveShortcut" type="button">Save</button>
+      <button id="clearShortcut" type="button">Clear</button>
+      <button id="closeSettings" type="button">Close</button>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
