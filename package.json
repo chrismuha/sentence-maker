@@ -1,0 +1,16 @@
+{
+  "name": "sentence-maker",
+  "version": "1.0.0",
+  "description": "Desktop sentence breaker built with Electron.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^39.2.5"
+  }
+}
