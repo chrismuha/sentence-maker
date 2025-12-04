@@ -122,8 +122,24 @@ function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: h
   const hasSystemModifier = useMeta || useAlt || useCtrl;
   const hasModifier = hasSystemModifier || event.shiftKey;
 
-  if (key === "shift") return "__modifier_only__"; // block Shift+Shift or Shift alone
-  if (key === "control" || key === "meta" || key === "alt") return "__modifier_only__";
+  if (key === "shift") {
+    if (useMeta) return "meta+shift";
+    if (useAlt) return "alt+shift";
+    if (useCtrl) return "ctrl+shift";
+    return "__modifier_only__"; // block Shift alone
+  }
+
+  if (key === "control" || key === "meta" || key === "alt") {
+    if (event.shiftKey) {
+      const parts = [];
+      if (key === "meta") parts.push("meta");
+      if (key === "control") parts.push("ctrl");
+      if (key === "alt") parts.push("alt");
+      parts.push("shift");
+      return parts.join("+");
+    }
+    return "__modifier_only__";
+  }
   if (key.startsWith("arrow") || key === "tab") return "";
 
   if (rawKey === " " || rawKey === "spacebar" || rawKey === "space") {
