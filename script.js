@@ -138,8 +138,15 @@ function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: h
   // Allow dual-character/symbol combos when no system modifier is held
   if (!hasSystemModifier && heldKeys && heldKeys.size >= 2) {
     const filtered = Array.from(heldKeys)
-      .map(k => (k || "").toLowerCase())
-      .filter(k => k.length === 1 && k.trim().length === 1);
+      .map(k => {
+        const val = (k || "").toLowerCase();
+        if (val === " " || val === "spacebar" || val === "space") return "space";
+        if (val === "backspace") return "backspace";
+        if (val.length === 1 && val.trim().length === 1) return val;
+        return "";
+      })
+      .filter(Boolean)
+      .filter(k => k !== "shift" && k !== "control" && k !== "meta" && k !== "alt");
 
     if (filtered.length >= 2) {
       const combo = Array.from(new Set(filtered)).sort();
@@ -188,6 +195,8 @@ function updateHint() {
     shortcutHint.textContent = `${keyLabel} will break sentences; it will not insert blank lines in the editor.`;
   } else if (shortcutKey === "space") {
     shortcutHint.textContent = `${keyLabel} will break sentences; it will not insert spaces in the editor.`;
+  } else if (shortcutKey === "backspace") {
+    shortcutHint.textContent = `${keyLabel} will break sentences; it will not delete text in the editor.`;
   } else {
     shortcutHint.textContent = `Shortcut: ${keyLabel} will break sentences.`;
   }
