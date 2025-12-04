@@ -108,16 +108,20 @@ function captureShortcut(event) {
 
 function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: heldKeys } = {}) {
   const code = (event.code || "").toLowerCase();
-  let key = (event.key || "").toLowerCase();
+  const rawKey = (event.key || "").toLowerCase();
+  let key = rawKey;
   const useMeta = event.metaKey || (heldKeys && heldKeys.has("meta"));
   const useAlt = event.altKey || (heldKeys && heldKeys.has("alt") || heldKeys && heldKeys.has("option"));
   const useCtrl = event.ctrlKey || (heldKeys && (heldKeys.has("ctrl") || heldKeys.has("control")));
   const hasSystemModifier = useMeta || useAlt || useCtrl;
   const hasModifier = hasSystemModifier || event.shiftKey;
-  const isAlphaNum = key.length === 1 && /[a-z0-9]/.test(key);
 
   if (key === "shift") return "__modifier_only__"; // block Shift+Shift or Shift alone
   if (key === "control" || key === "meta" || key === "alt") return "__modifier_only__";
+
+  if (rawKey === " " || rawKey === "spacebar" || rawKey === "space") {
+    key = "space";
+  }
 
   // Option/Cmd sometimes produce symbols; fallback to code to keep base key
   if ((event.altKey || event.metaKey) && key.length === 1 && !/[a-z0-9]/.test(key)) {
@@ -128,14 +132,14 @@ function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: h
     }
   }
 
-  const isSymbol = key.length === 1 && !/[a-z0-9]/.test(key);
-  if (isSymbol) return "";
+  const isAlphaNum = key.length === 1 && /[a-z0-9]/.test(key);
+  const isSymbol = key.length === 1 && !/[a-z0-9]/.test(key) && key !== "space";
 
-  // Only allow dual-character combos when no system modifier is held
+  // Allow dual-character/symbol combos when no system modifier is held
   if (!hasSystemModifier && heldKeys && heldKeys.size >= 2) {
     const filtered = Array.from(heldKeys)
       .map(k => (k || "").toLowerCase())
-      .filter(k => k.length === 1 && /[a-z0-9]/.test(k));
+      .filter(k => k.length === 1 && k.trim().length === 1);
 
     if (filtered.length >= 2) {
       const combo = Array.from(new Set(filtered)).sort();
@@ -143,7 +147,7 @@ function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: h
     }
   }
 
-  if (!hasSystemModifier && disallowPlainAlphaNum && isAlphaNum && heldKeys && heldKeys.size === 1) {
+  if (!hasSystemModifier && (isSymbol || (disallowPlainAlphaNum && isAlphaNum)) && heldKeys && heldKeys.size === 1) {
     return "__pending_combo__";
   }
   if (!hasSystemModifier && disallowPlainAlphaNum && isAlphaNum && !hasModifier) return "";
@@ -182,6 +186,8 @@ function updateHint() {
   const keyLabel = formatKey(shortcutKey);
   if (shortcutKey === "enter") {
     shortcutHint.textContent = `${keyLabel} will break sentences; it will not insert blank lines in the editor.`;
+  } else if (shortcutKey === "space") {
+    shortcutHint.textContent = `${keyLabel} will break sentences; it will not insert spaces in the editor.`;
   } else {
     shortcutHint.textContent = `Shortcut: ${keyLabel} will break sentences.`;
   }
