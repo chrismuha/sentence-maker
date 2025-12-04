@@ -11,6 +11,7 @@ const shortcutHint = document.getElementById("shortcutHint");
 
 let shortcutKey = null; // normalized (lowercase) key name
 let pendingShortcut = null;
+const pressedKeys = new Set();
 
 breakBtn.addEventListener("click", breakSentences);
 settingsBtn.addEventListener("click", openSettings);
@@ -24,20 +25,33 @@ clearShortcut.addEventListener("click", () => {
   pendingShortcut = null;
   shortcutInput.value = "";
 });
-
-shortcutInput.addEventListener("keydown", captureShortcut);
+shortcutInput.addEventListener("keydown", event => {
+  pressedKeys.add((event.key || "").toLowerCase());
+  captureShortcut(event);
+});
+shortcutInput.addEventListener("keyup", event => {
+  pressedKeys.delete((event.key || "").toLowerCase());
+});
+shortcutInput.addEventListener("blur", () => pressedKeys.clear());
 
 document.addEventListener("keydown", event => {
+  pressedKeys.add((event.key || "").toLowerCase());
+
   if (!shortcutKey) return;
   if (!settingsPanel.classList.contains("hidden")) return;
   if (event.target === shortcutInput) return;
 
-  const normalized = normalizeKeyEvent(event);
+  const normalized = normalizeKeyEvent(event, { pressedKeys });
   if (normalized && normalized === shortcutKey) {
     event.preventDefault();
     breakSentences();
   }
 });
+
+document.addEventListener("keyup", event => {
+  pressedKeys.delete((event.key || "").toLowerCase());
+});
+window.addEventListener("blur", () => pressedKeys.clear());
 
 function breakSentences() {
   const text = editor.value.trim();
@@ -71,7 +85,12 @@ function applyShortcut(normalizedKey) {
 
 function captureShortcut(event) {
   event.preventDefault();
-  const normalized = normalizeKeyEvent(event);
+  const normalized = normalizeKeyEvent(event, { pressedKeys });
+
+  if (normalized === "__pending_combo__") {
+    return;
+  }
+
   if (!normalized) {
     const previous = pendingShortcut;
     shortcutInput.value = "Not allowed";
@@ -85,7 +104,7 @@ function captureShortcut(event) {
   shortcutInput.value = formatKey(pendingShortcut);
 }
 
-function normalizeKeyEvent(event, { disallowPlainAlphaNum = true } = {}) {
+function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: heldKeys } = {}) {
   const key = (event.key || "").toLowerCase();
   const hasModifier = event.ctrlKey || event.metaKey || event.altKey || event.shiftKey;
   const isAlphaNum = key.length === 1 && /[a-z0-9]/.test(key);
@@ -96,6 +115,20 @@ function normalizeKeyEvent(event, { disallowPlainAlphaNum = true } = {}) {
   const isSymbol = key.length === 1 && !/[a-z0-9]/.test(key);
   if (isSymbol) return "";
 
+  if (heldKeys && heldKeys.size >= 2) {
+    const filtered = Array.from(heldKeys)
+      .map(k => (k || "").toLowerCase())
+      .filter(k => k.length === 1 && /[a-z0-9]/.test(k));
+
+    if (filtered.length >= 2) {
+      const combo = Array.from(new Set(filtered)).sort();
+      return combo.join("+");
+    }
+  }
+
+  if (disallowPlainAlphaNum && isAlphaNum && heldKeys && heldKeys.size === 1) {
+    return "__pending_combo__";
+  }
   if (disallowPlainAlphaNum && isAlphaNum && !hasModifier) return "";
 
   const parts = [];
