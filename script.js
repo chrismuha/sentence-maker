@@ -93,11 +93,7 @@ function captureShortcut(event) {
   event.preventDefault();
   const normalized = normalizeKeyEvent(event, { pressedKeys });
 
-  if (normalized === "__pending_combo__" || normalized === "__modifier_only__") {
-    return;
-  }
-
-  if (!normalized) {
+  if (!normalized || normalized === "__pending_combo__" || normalized === "__modifier_only__") {
     const previous = pendingShortcut;
     shortcutInput.value = "Not allowed";
     setTimeout(() => {
