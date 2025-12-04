@@ -26,6 +26,10 @@ clearShortcut.addEventListener("click", () => {
   shortcutInput.value = "";
 });
 shortcutInput.addEventListener("keydown", event => {
+  // Reset if we hit a fresh modifier chord to avoid stale keys
+  if (event.metaKey || event.altKey || event.ctrlKey) {
+    pressedKeys.clear();
+  }
   pressedKeys.add((event.key || "").toLowerCase());
   captureShortcut(event);
 });
@@ -68,12 +72,14 @@ function breakSentences() {
 function openSettings() {
   pendingShortcut = shortcutKey;
   shortcutInput.value = pendingShortcut ? formatKey(pendingShortcut) : "";
+  pressedKeys.clear();
   settingsPanel.classList.remove("hidden");
   backdrop.classList.remove("hidden");
   shortcutInput.focus();
 }
 
 function hideSettings() {
+  pressedKeys.clear();
   settingsPanel.classList.add("hidden");
   backdrop.classList.add("hidden");
 }
@@ -107,7 +113,10 @@ function captureShortcut(event) {
 function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: heldKeys } = {}) {
   const code = (event.code || "").toLowerCase();
   let key = (event.key || "").toLowerCase();
-  const hasSystemModifier = event.ctrlKey || event.metaKey || event.altKey;
+  const useMeta = event.metaKey || (heldKeys && heldKeys.has("meta"));
+  const useAlt = event.altKey || (heldKeys && heldKeys.has("alt") || heldKeys && heldKeys.has("option"));
+  const useCtrl = event.ctrlKey || (heldKeys && (heldKeys.has("ctrl") || heldKeys.has("control")));
+  const hasSystemModifier = useMeta || useAlt || useCtrl;
   const hasModifier = hasSystemModifier || event.shiftKey;
   const isAlphaNum = key.length === 1 && /[a-z0-9]/.test(key);
 
@@ -144,9 +153,9 @@ function normalizeKeyEvent(event, { disallowPlainAlphaNum = true, pressedKeys: h
   if (!hasSystemModifier && disallowPlainAlphaNum && isAlphaNum && !hasModifier) return "";
 
   const parts = [];
-  if (event.metaKey) parts.push("meta");
-  if (event.ctrlKey) parts.push("ctrl");
-  if (event.altKey) parts.push("alt");
+  if (useMeta) parts.push("meta");
+  if (useCtrl) parts.push("ctrl");
+  if (useAlt) parts.push("alt");
   if (event.shiftKey) parts.push("shift");
 
   const mainKey = key === "return" ? "enter" : key;
