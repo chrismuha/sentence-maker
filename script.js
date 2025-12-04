@@ -1,15 +1,14 @@
-document.getElementById("breakBtn").addEventListener("click", insertBreak);
+document.getElementById("breakBtn").addEventListener("click", breakSentences);
 
-function insertBreak() {
+function breakSentences() {
   const editor = document.getElementById("editor");
-  const start = editor.selectionStart;
-  const end = editor.selectionEnd;
+  const text = editor.value.trim();
 
-  // Insert a newline at the cursor
-  const text = editor.value;
-  editor.value = text.substring(0, start) + "\n" + text.substring(end);
+  // Split on sentence-ending punctuation and trim each chunk
+  const sentences = text.match(/[^.!?]+[.!?]*/g) || [];
+  const separated = sentences.map(sentence => sentence.trim()).filter(Boolean);
 
-  // Move cursor after the newline
-  editor.selectionStart = editor.selectionEnd = start + 1;
+  editor.value = separated.join("\n");
+  editor.selectionStart = editor.selectionEnd = editor.value.length;
   editor.focus();
 }
