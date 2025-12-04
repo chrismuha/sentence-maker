@@ -149,6 +149,7 @@ function formatKey(key) {
   return key
     .split("+")
     .map(part => {
+      if (part === "meta") return "Alt/Cmd";
       if (part.length === 1) return part.toUpperCase();
       return part[0].toUpperCase() + part.slice(1);
     })

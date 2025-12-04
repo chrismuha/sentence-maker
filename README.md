@@ -7,6 +7,6 @@ Simple desktop app that breaks text into individual sentences.
 2. Start the app: `npm start`
 
 ## Keyboard shortcut
-- Use **Settings** and press a key to assign a shortcut for **Break** (single letters/numbers alone are blocked; pressing two together is allowed; symbols and Shift+Shift are blocked).
+- Use **Settings** and press a key to assign a shortcut for **Break** (single letters/numbers alone are blocked; pressing two together is allowed; symbols and Shift+Shift are blocked; Alt/Cmd is allowed with another key).
 - Leaving the field blank (or hitting **Clear**) clears the shortcut.
 - If you assign Enter/Return, pressing Enter will break the text instead of inserting a blank line.
