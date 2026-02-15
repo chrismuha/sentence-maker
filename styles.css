@@ -1,10 +1,33 @@
+:root {
+  --bg: #f3f6fb;
+  --surface: #ffffff;
+  --surface-muted: #fafafa;
+  --text: #1f2a37;
+  --text-muted: #5b6470;
+  --border: #d7dde7;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #f8faff 0%, var(--bg) 100%);
+  color: var(--text);
+}
+
 .app {
   max-width: 980px;
   margin: 20px auto;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   font-family: Arial, sans-serif;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
 }
 
 textarea {
@@ -12,9 +35,19 @@ textarea {
   min-height: 240px;
   height: min(55vh, 480px);
   font-size: 12pt;
-  padding: 10px;
+  padding: 12px;
   box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fcfdff;
+  color: var(--text);
   resize: vertical; /* keep width fixed so scroll bar stays aligned */
+}
+
+textarea:focus {
+  outline: 2px solid rgba(37, 99, 235, 0.25);
+  outline-offset: 1px;
+  border-color: var(--accent);
 }
 
 .controls {
@@ -23,13 +56,39 @@ textarea {
 }
 
 button {
-  padding: 8px 12px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  color: var(--text);
+  font-weight: 600;
   cursor: pointer;
+}
+
+button:hover {
+  background: #f0f4fb;
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.35);
+  outline-offset: 1px;
+}
+
+#breakBtn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+#breakBtn:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 .hint {
   font-size: 9.75pt;
-  color: #555;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -50,22 +109,32 @@ button {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   padding: 16px;
   width: min(92vw, 420px);
   max-height: min(88vh, 680px);
   overflow-y: auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow);
   z-index: 2;
 }
 
 .settings input {
   width: 100%;
   margin: 8px 0 4px;
-  padding: 8px;
+  padding: 10px 12px;
   box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fcfdff;
+  color: var(--text);
+}
+
+.settings input:focus {
+  outline: 2px solid rgba(37, 99, 235, 0.25);
+  outline-offset: 1px;
+  border-color: var(--accent);
 }
 
 .settings-actions {
@@ -79,7 +148,7 @@ button {
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(12, 23, 40, 0.35);
   z-index: 1;
 }
 
@@ -90,6 +159,7 @@ button {
 @media (max-width: 680px) {
   .app {
     margin: 12px;
+    padding: 12px;
     gap: 10px;
   }
 
@@ -142,9 +212,9 @@ button {
 
 @media (max-width: 375px) {
   .shortcut-rules {
-    border: 1px solid #ddd;
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: #fafafa;
+    background: var(--surface-muted);
     padding: 8px 10px;
   }
 
