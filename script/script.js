@@ -19,6 +19,7 @@ const pressedKeys = new Set();
 let notAllowedTimeout = null;
 let breakConfirmationTimeout = null;
 const STORAGE_KEY = "sentenceMakerSettings";
+const BREAK_CONFIRMATION_MS = 5000;
 
 breakBtn.addEventListener("click", breakSentences);
 settingsBtn.addEventListener("click", openSettings);
@@ -257,7 +258,7 @@ function showBreakConfirmation(sentenceCount) {
   breakConfirmation.classList.remove("hidden");
   breakConfirmationTimeout = setTimeout(() => {
     breakConfirmation.classList.add("hidden");
-  }, 1800);
+  }, BREAK_CONFIRMATION_MS);
 }
 
 function saveSettings() {
