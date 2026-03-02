@@ -15,6 +15,7 @@
       <button id="breakBtn">Break</button>
       <button id="settingsBtn" type="button">Settings</button>
     </div>
+    <p id="breakConfirmation" class="confirmation hidden" role="status" aria-live="polite"></p>
     <p id="shortcutHint" class="hint">No keyboard shortcut assigned.</p>
   </div>
 
@@ -23,6 +24,10 @@
     <h2>Shortcut</h2>
     <label for="shortcutInput">Press a key to trigger break.</label>
     <input id="shortcutInput" type="text" placeholder="Press a key..." readonly />
+    <label class="setting-toggle" for="blankLineSetting">
+      <input id="blankLineSetting" type="checkbox" />
+      Insert blank lines between broken sentences
+    </label>
     <details class="shortcut-rules">
       <summary>Shortcut rules</summary>
       <p class="hint">Letters/numbers or symbols alone are not allowed (press two together to assign combos, including

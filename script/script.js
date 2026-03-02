@@ -8,23 +8,32 @@ const saveShortcut = document.getElementById("saveShortcut");
 const clearShortcut = document.getElementById("clearShortcut");
 const closeSettings = document.getElementById("closeSettings");
 const shortcutHint = document.getElementById("shortcutHint");
+const breakConfirmation = document.getElementById("breakConfirmation");
+const blankLineSetting = document.getElementById("blankLineSetting");
 
 let shortcutKey = null; // normalized (lowercase) key name
 let pendingShortcut = null;
+let insertBlankLines = false;
+let pendingInsertBlankLines = false;
 const pressedKeys = new Set();
 let notAllowedTimeout = null;
+let breakConfirmationTimeout = null;
+const STORAGE_KEY = "sentenceMakerSettings";
 
 breakBtn.addEventListener("click", breakSentences);
 settingsBtn.addEventListener("click", openSettings);
 closeSettings.addEventListener("click", hideSettings);
 backdrop.addEventListener("click", hideSettings);
 saveShortcut.addEventListener("click", () => {
-  applyShortcut(pendingShortcut);
+  applySettings(pendingShortcut, pendingInsertBlankLines);
   hideSettings();
 });
 clearShortcut.addEventListener("click", () => {
   pendingShortcut = null;
   shortcutInput.value = "";
+});
+blankLineSetting.addEventListener("change", event => {
+  pendingInsertBlankLines = Boolean(event.target.checked);
 });
 shortcutInput.addEventListener("keydown", event => {
   // Reset if we hit a fresh modifier chord to avoid stale keys
@@ -65,14 +74,17 @@ function breakSentences() {
   const sentences = text.match(/[^.!?]+[.!?]*/g) || [];
   const separated = sentences.map(sentence => sentence.trim()).filter(Boolean);
 
-  editor.value = separated.join("\n");
+  editor.value = separated.join(insertBlankLines ? "\n\n" : "\n");
   editor.selectionStart = editor.selectionEnd = editor.value.length;
   editor.focus();
+  showBreakConfirmation(separated.length);
 }
 
 function openSettings() {
   pendingShortcut = shortcutKey;
+  pendingInsertBlankLines = insertBlankLines;
   shortcutInput.value = pendingShortcut ? formatKey(pendingShortcut) : "";
+  blankLineSetting.checked = pendingInsertBlankLines;
   pressedKeys.clear();
   settingsPanel.classList.remove("hidden");
   backdrop.classList.remove("hidden");
@@ -85,8 +97,10 @@ function hideSettings() {
   backdrop.classList.add("hidden");
 }
 
-function applyShortcut(normalizedKey) {
+function applySettings(normalizedKey, useBlankLines) {
   shortcutKey = normalizedKey || null;
+  insertBlankLines = Boolean(useBlankLines);
+  saveSettings();
   updateHint();
 }
 
@@ -209,7 +223,9 @@ function formatKey(key) {
 
 function updateHint() {
   if (!shortcutKey) {
-    shortcutHint.textContent = "No keyboard shortcut assigned.";
+    shortcutHint.textContent = insertBlankLines
+      ? "No keyboard shortcut assigned. Break adds blank lines between sentences."
+      : "No keyboard shortcut assigned.";
     return;
   }
 
@@ -223,6 +239,57 @@ function updateHint() {
   } else {
     shortcutHint.textContent = `Shortcut: ${keyLabel} will break sentences.`;
   }
+
+  if (insertBlankLines) {
+    shortcutHint.textContent += " Output will include blank lines between sentences.";
+  }
 }
 
+function showBreakConfirmation(sentenceCount) {
+  clearTimeout(breakConfirmationTimeout);
+  if (sentenceCount === 0) {
+    breakConfirmation.textContent = "No sentences found to break.";
+  } else if (sentenceCount === 1) {
+    breakConfirmation.textContent = "Break complete: 1 sentence.";
+  } else {
+    breakConfirmation.textContent = `Break complete: ${sentenceCount} sentences.`;
+  }
+  breakConfirmation.classList.remove("hidden");
+  breakConfirmationTimeout = setTimeout(() => {
+    breakConfirmation.classList.add("hidden");
+  }, 1800);
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        shortcutKey,
+        insertBlankLines
+      })
+    );
+  } catch {
+    // Ignore persistence errors; the app can still run in-memory.
+  }
+}
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.shortcutKey === "string") {
+      shortcutKey = parsed.shortcutKey;
+    }
+    if (typeof parsed.insertBlankLines === "boolean") {
+      insertBlankLines = parsed.insertBlankLines;
+      pendingInsertBlankLines = parsed.insertBlankLines;
+    }
+  } catch {
+    // Ignore malformed or unavailable saved settings.
+  }
+}
+
+loadSettings();
 updateHint();

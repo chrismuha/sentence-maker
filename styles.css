@@ -92,6 +92,13 @@ button:focus-visible {
   margin: 0;
 }
 
+.confirmation {
+  margin: 0;
+  color: #0f6f3f;
+  font-size: 10pt;
+  font-weight: 600;
+}
+
 .shortcut-rules {
   margin: 0;
 }
@@ -135,6 +142,21 @@ button:focus-visible {
   outline: 2px solid rgba(37, 99, 235, 0.25);
   outline-offset: 1px;
   border-color: var(--accent);
+}
+
+.setting-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 10pt;
+  color: var(--text);
+}
+
+.setting-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
 }
 
 .settings-actions {
@@ -182,6 +204,10 @@ button:focus-visible {
   .settings input {
     min-height: 44px;
     font-size: 16px;
+  }
+
+  .setting-toggle {
+    font-size: 11pt;
   }
 
   .hint {
