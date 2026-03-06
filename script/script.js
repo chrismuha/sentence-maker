@@ -71,8 +71,8 @@ window.addEventListener("blur", () => pressedKeys.clear());
 function breakSentences() {
   const text = editor.value.trim();
 
-  // Split on sentence-ending punctuation and trim each chunk
-  const sentences = text.match(/[^.!?]+[.!?]*/g) || [];
+  // Split only when punctuation is followed by whitespace/end, so URL dots like ".com" stay intact.
+  const sentences = text.length > 0 ? text.split(/(?<=[.!?])(?:\s+|$)/g) : [];
   const separated = sentences.map(sentence => sentence.trim()).filter(Boolean);
 
   editor.value = separated.join(insertBlankLines ? "\n\n" : "\n");
