@@ -4,7 +4,7 @@
   "description": "Desktop sentence breaker built with Electron.",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "env -u ELECTRON_RUN_AS_NODE electron ."
   },
   "keywords": [],
   "author": "",
