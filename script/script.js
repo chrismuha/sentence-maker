@@ -13,12 +13,11 @@ const blankLineSetting = document.getElementById("blankLineSetting");
 
 let shortcutKey = null; // normalized (lowercase) key name
 let pendingShortcut = null;
-let insertBlankLines = false;
-let pendingInsertBlankLines = false;
+let insertBlankLines = true;
+let pendingInsertBlankLines = true;
 const pressedKeys = new Set();
 let notAllowedTimeout = null;
 let breakConfirmationTimeout = null;
-const STORAGE_KEY = "sentenceMakerSettings";
 const BREAK_CONFIRMATION_MS = 5000;
 
 breakBtn.addEventListener("click", breakSentences);
@@ -101,7 +100,9 @@ function hideSettings() {
 function applySettings(normalizedKey, useBlankLines) {
   shortcutKey = normalizedKey || null;
   insertBlankLines = Boolean(useBlankLines);
-  saveSettings();
+  saveSettings().catch(() => {
+    // Ignore persistence errors; the app can still run in-memory.
+  });
   updateHint();
 }
 
@@ -261,25 +262,20 @@ function showBreakConfirmation(sentenceCount) {
   }, BREAK_CONFIRMATION_MS);
 }
 
-function saveSettings() {
-  try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        shortcutKey,
-        insertBlankLines
-      })
-    );
-  } catch {
-    // Ignore persistence errors; the app can still run in-memory.
-  }
+async function saveSettings() {
+  if (!window.sentenceMakerSettings?.save) return;
+
+  await window.sentenceMakerSettings.save({
+    shortcutKey,
+    insertBlankLines
+  });
 }
 
-function loadSettings() {
+async function loadSettings() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw);
+    if (!window.sentenceMakerSettings?.load) return;
+
+    const parsed = await window.sentenceMakerSettings.load();
     if (typeof parsed.shortcutKey === "string") {
       shortcutKey = parsed.shortcutKey;
     }
@@ -292,5 +288,6 @@ function loadSettings() {
   }
 }
 
-loadSettings();
-updateHint();
+loadSettings().finally(() => {
+  updateHint();
+});

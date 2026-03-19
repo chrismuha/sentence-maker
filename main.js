@@ -1,5 +1,65 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
+const fs = require("fs");
 const path = require("path");
+
+function getBundledSettingsPath() {
+  return path.join(__dirname, "settings.json");
+}
+
+function getUserSettingsPath() {
+  return path.join(app.getPath("userData"), "settings.json");
+}
+
+function getDefaultSettings() {
+  try {
+    const raw = fs.readFileSync(getBundledSettingsPath(), "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return {
+      shortcutKey: null,
+      insertBlankLines: true
+    };
+  }
+}
+
+function ensureSettingsFile() {
+  const settingsPath = getUserSettingsPath();
+  const defaultSettings = getDefaultSettings();
+
+  try {
+    if (!fs.existsSync(settingsPath)) {
+      fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
+      fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
+      return defaultSettings;
+    }
+
+    const raw = fs.readFileSync(settingsPath, "utf8");
+    const parsed = JSON.parse(raw);
+    return {
+      shortcutKey: typeof parsed.shortcutKey === "string" ? parsed.shortcutKey : null,
+      insertBlankLines: typeof parsed.insertBlankLines === "boolean"
+        ? parsed.insertBlankLines
+        : Boolean(defaultSettings.insertBlankLines)
+    };
+  } catch {
+    return defaultSettings;
+  }
+}
+
+function saveSettings(nextSettings) {
+  const settingsPath = getUserSettingsPath();
+  const defaultSettings = getDefaultSettings();
+  const normalized = {
+    shortcutKey: typeof nextSettings?.shortcutKey === "string" ? nextSettings.shortcutKey : null,
+    insertBlankLines: typeof nextSettings?.insertBlankLines === "boolean"
+      ? nextSettings.insertBlankLines
+      : Boolean(defaultSettings.insertBlankLines)
+  };
+
+  fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
+  fs.writeFileSync(settingsPath, JSON.stringify(normalized, null, 2));
+  return normalized;
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -15,6 +75,12 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  ensureSettingsFile();
+
+  ipcMain.handle("settings:load", () => ensureSettingsFile());
+  ipcMain.handle("settings:save", (_event, nextSettings) => saveSettings(nextSettings));
+  ipcMain.handle("settings:path", () => getUserSettingsPath());
+
   createWindow();
 
   app.on("activate", () => {
