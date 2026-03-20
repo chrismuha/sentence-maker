@@ -1,17 +1,45 @@
 {
   "name": "sentence-maker",
+  "productName": "Sentence Maker",
   "version": "1.0.0",
   "description": "Desktop sentence breaker built with Electron.",
   "main": "main.js",
   "scripts": {
-    "start": "env -u ELECTRON_RUN_AS_NODE electron ."
+    "start": "npm run dev",
+    "start:prod": "env -u ELECTRON_RUN_AS_NODE NODE_ENV=production electron .",
+    "dev": "npm run dev:main",
+    "dev:renderer": "echo \"No renderer dev server configured for sentence-maker\"",
+    "dev:main": "env -u ELECTRON_RUN_AS_NODE NODE_ENV=development electron .",
+    "build": "npm run dist",
+    "build:web": "echo \"No web build configured for sentence-maker\"",
+    "dist": "npm run dist:mac:universal",
+    "dist:mac:x64": "npm run generate-icons && npm run build:web && electron-builder --mac --x64",
+    "dist:mac:arm64": "npm run generate-icons && npm run build:web && electron-builder --mac --arm64",
+    "dist:mac:universal": "npm run generate-icons && npm run build:web && electron-builder --mac --universal",
+    "build:mac:x64": "npm run dist:mac:x64",
+    "build:mac:arm64": "npm run dist:mac:arm64",
+    "build:mac:universal": "npm run dist:mac:universal",
+    "dist:win": "npm run generate-icons && npm run build:web && electron-builder --win",
+    "dist:linux": "npm run build:web && electron-builder --linux",
+    "build:win": "npm run dist:win",
+    "build:linux": "npm run dist:linux",
+    "package": "echo \"electron-forge package is not configured for sentence-maker\"",
+    "make": "echo \"electron-forge make is not configured for sentence-maker\"",
+    "publish": "echo \"electron-forge publish is not configured for sentence-maker\"",
+    "lint": "echo \"No linting configured\"",
+    "generate-icons": "echo \"No icon generation configured\"",
+    "all": "echo \"Shared all-script is not configured for sentence-maker\"",
+    "scripts": "echo \"Shared scripts runner is not configured for sentence-maker\""
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": {
+    "name": "Chris Muha"
+  },
+  "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
-    "electron": "^39.2.5"
+    "electron": "^39.2.5",
+    "electron-builder": "^26.0.12"
   },
   "dependencies": {
     "boolean": "^3.2.0",
