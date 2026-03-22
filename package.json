@@ -62,7 +62,7 @@
     "extract-zip": "^2.0.1",
     "fd-slicer": "^1.1.0",
     "fs-extra": "^8.1.0",
-    "get-stream": "^5.2.0",
+    "get-stream": "^9.0.1",
     "global-agent": "^3.0.0",
     "globalthis": "^1.0.4",
     "gopd": "^1.2.0",
