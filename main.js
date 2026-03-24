@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const fs = require("fs");
 const path = require("path");
+const { attachLiveReload } = require("../_shared/electron-live-reload.cjs");
 
 function getBundledSettingsPath() {
   return path.join(__dirname, "settings.json");
@@ -72,6 +73,15 @@ function createWindow() {
   });
 
   win.loadFile("index.html");
+
+  const stopWatching = attachLiveReload({
+    enabled: !app.isPackaged,
+    rootDir: __dirname,
+    watchPaths: ["index.html", "styles.css", "script", "preload"],
+    getWindows: () => [win],
+  });
+
+  win.on("closed", stopWatching);
 }
 
 app.whenReady().then(() => {
