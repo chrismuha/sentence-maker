@@ -12,7 +12,7 @@
     "dev:main": "env -u ELECTRON_RUN_AS_NODE NODE_ENV=development electron .",
     "build": "npm run dist",
     "build:web": "echo \"No web build configured for sentence-maker\"",
-    "dist": "npm run dist:mac:universal",
+    "dist": "node ../_shared/run-electron-dist.mjs mac:universal",
     "dist:mac:x64": "npm run generate-icons && npm run build:web && electron-builder --mac --x64",
     "dist:mac:arm64": "npm run generate-icons && npm run build:web && electron-builder --mac --arm64",
     "dist:mac:universal": "npm run generate-icons && npm run build:web && electron-builder --mac --universal",
