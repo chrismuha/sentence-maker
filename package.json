@@ -37,6 +37,14 @@
   },
   "license": "MIT",
   "type": "commonjs",
+  "build": {
+    "mac": {
+      "artifactName": "sentence-maker-${version}.dmg"
+    },
+    "portable": {
+      "artifactName": "sentence-maker-${version}.exe"
+    }
+  },
   "devDependencies": {
     "electron": "^39.2.5",
     "electron-builder": "^26.0.12"
