@@ -6,9 +6,10 @@
   "main": "main.js",
   "scripts": {
     "start": "npm run dev",
+    "start:fixed": "concurrently \"npm run dev:renderer\" \"cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5180/ npm run dev:main\"",
     "start:prod": "env -u ELECTRON_RUN_AS_NODE NODE_ENV=production electron .",
-    "dev": "npm run dev:main",
-    "dev:renderer": "echo \"No renderer dev server configured for sentence-maker\"",
+    "dev": "node ../_shared/vite-electron-dev.mjs --port 5179",
+    "dev:renderer": "vite dev --host 127.0.0.1 --port 5180",
     "dev:main": "env -u ELECTRON_RUN_AS_NODE NODE_ENV=development electron .",
     "build": "npm run dist",
     "build:web": "echo \"No web build configured for sentence-maker\"",
@@ -46,10 +47,12 @@
     }
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "electron": "^39.2.5",
     "electron-builder": "^26.0.12"
   },
   "dependencies": {
+    "concurrently": "^9.2.1",
     "boolean": "^3.2.0",
     "buffer-crc32": "^0.2.13",
     "cacheable-lookup": "^5.0.4",
