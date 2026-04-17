@@ -6,7 +6,7 @@
   "main": "main.js",
   "scripts": {
     "prestart": "node ../_shared/repair.mjs",
-    "start": "npm run dev",
+    "start": "node ../_shared/vite-electron-dev.mjs --port 5184",
     "start:fixed": "concurrently \"npm run dev:renderer\" \"cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5184/ npm run dev:main\"",
     "start:prod": "env -u ELECTRON_RUN_AS_NODE NODE_ENV=production electron .",
     "predev": "node ../_shared/repair.mjs",
@@ -33,8 +33,8 @@
     "postinstall": "node ../_shared/repair.mjs",
     "lint": "echo \"No linting configured\"",
     "generate-icons": "echo \"No icon generation configured\"",
-    "all": "echo \"Shared all-script is not configured for sentence-maker\"",
-    "scripts": "echo \"Shared scripts runner is not configured for sentence-maker\""
+    "all": "bash ../../../SCRIPTS/script-set-1/run-all.sh",
+    "scripts": "bash ../../../SCRIPTS/script-set-1/run-all.sh"
   },
   "keywords": [],
   "author": {
