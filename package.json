@@ -12,7 +12,7 @@
     "predev": "node ../_shared/repair.mjs",
     "dev": "node ../_shared/vite-electron-dev.mjs --port 5184",
     "dev:renderer": "vite dev --host 127.0.0.1 --port 5184",
-    "dev:main": "env -u ELECTRON_RUN_AS_NODE NODE_ENV=development electron .",
+    "dev:main": "env -u ELECTRON_RUN_AS_NODE NODE_ENV=development electron . --disable-cache",
     "build": "npm run dist",
     "build:web": "echo \"No web build configured for sentence-maker\"",
     "prebuild": "node ../_shared/repair.mjs",
