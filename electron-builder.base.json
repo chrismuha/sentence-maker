@@ -1,0 +1,28 @@
+{
+  "appId": "com.mcr.sentencemaker",
+  "productName": "SentenceMaker",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist/**/*",
+    "main.js",
+    "preload/**/*",
+    "settings.json",
+    "package.json"
+  ],
+  "forceCodeSigning": false,
+  "mac": {
+    "category": "public.app-category.productivity",
+    "identity": null,
+    "icon": "assets/icons/icon.icns"
+  },
+  "win": {
+    "target": "nsis",
+    "icon": "assets/icons/icon.ico"
+  },
+  "linux": {
+    "target": "AppImage",
+    "icon": "assets/icons/icon.png"
+  }
+}

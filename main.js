@@ -1,4 +1,8 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
+if (require("electron-squirrel-startup")) {
+  app.quit();
+}
+
 const fs = require("fs");
 const path = require("path");
 const { attachLiveReload } = require("../_shared/electron-live-reload.cjs");
@@ -72,7 +76,12 @@ function createWindow() {
     }
   });
 
-  win.loadFile("index.html");
+  if (process.env.NODE_ENV === "development" || process.env.VITE_DEV_SERVER_URL) {
+    const devServer = process.env.VITE_DEV_SERVER_URL || "http://localhost:5184";
+    win.loadURL(devServer);
+  } else {
+    win.loadFile(path.join(__dirname, "dist", "index.html"));
+  }
 
   const stopWatching = attachLiveReload({
     enabled: !app.isPackaged,
