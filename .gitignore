@@ -91,6 +91,9 @@ typings/
 # Electron-Forge
 out/
 
+# Electron Builder
+release/
+
 dist/
 
 package-lock.json
