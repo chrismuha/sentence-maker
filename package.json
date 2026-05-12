@@ -1,6 +1,5 @@
 {
   "name": "sentence-maker",
-  "productName": "Sentence Maker",
   "version": "1.0.0",
   "description": "Desktop sentence breaker built with Electron.",
   "main": "main.js",
