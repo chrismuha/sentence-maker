@@ -48,11 +48,51 @@
   "type": "commonjs",
   "build": {
     "mac": {
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "icon": "assets/icons/icon.icns",
+      "category": "public.app-category.productivity",
+      "x64ArchFiles": "Contents/Resources/app.asar.unpacked/node_modules/{@img/sharp-darwin-x64,@img/sharp-libvips-darwin-x64,@img/sharp-darwin-arm64,@img/sharp-libvips-darwin-arm64,@napi-rs/canvas-darwin-x64}/**",
       "artifactName": "sentence-maker-${version}.dmg"
     },
     "portable": {
       "artifactName": "sentence-maker-${version}.exe"
-    }
+    },
+    "appId": "com.muha.sentencemaker",
+    "productName": "Sentence Maker",
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "files": [
+      "dist/**",
+      "src/**",
+      "assets/**",
+      "index.html",
+      "preload.js",
+      "package.json"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/sharp/**",
+      "**/node_modules/@img/**"
+    ],
+    "extraResources": [
+      {
+        "from": "assets",
+        "to": "assets"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icons/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icons"
+    },
+    "forceCodeSigning": false
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",
