@@ -92,7 +92,8 @@
       "target": "AppImage",
       "icon": "assets/icons"
     },
-    "forceCodeSigning": false
+    "forceCodeSigning": false,
+    "afterPack": "./scripts/electron-builder-after-pack.cjs"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",
