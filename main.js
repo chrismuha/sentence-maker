@@ -83,6 +83,16 @@ function createWindow() {
     win.loadFile(path.join(__dirname, "dist", "index.html"));
   }
 
+  if (!app.isPackaged) {
+    win.webContents.on("before-input-event", (event, input) => {
+      if (((input.meta && input.alt) || (input.control && input.shift)) && input.key?.toLowerCase() === "i") {
+        event.preventDefault();
+        win.webContents.toggleDevTools();
+      }
+    });
+    if (process.env.OPEN_DEVTOOLS === "1") win.webContents.openDevTools();
+  }
+
   const stopWatching = attachLiveReload({
     enabled: !app.isPackaged,
     rootDir: __dirname,
