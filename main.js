@@ -85,7 +85,8 @@ function createWindow() {
 
   if (!app.isPackaged) {
     win.webContents.on("before-input-event", (event, input) => {
-      if (((input.meta && input.alt) || (input.control && input.shift)) && input.key?.toLowerCase() === "i") {
+      const isDevToolsKey = input.key?.toLowerCase() === "i" || input.code === "KeyI";
+      if (((input.meta && input.alt) || (input.control && input.shift)) && isDevToolsKey) {
         event.preventDefault();
         win.webContents.toggleDevTools();
       }
