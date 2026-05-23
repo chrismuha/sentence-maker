@@ -6,6 +6,7 @@ if (require("electron-squirrel-startup")) {
 const fs = require("fs");
 const path = require("path");
 const { attachLiveReload } = require("../_shared/electron-live-reload.cjs");
+const { loadRenderer } = require("./startup-mode.cjs");
 
 function getBundledSettingsPath() {
   return path.join(__dirname, "settings.json");
@@ -76,12 +77,10 @@ function createWindow() {
     }
   });
 
-  if (process.env.NODE_ENV === "development" || process.env.VITE_DEV_SERVER_URL) {
-    const devServer = process.env.VITE_DEV_SERVER_URL || "http://localhost:5184";
-    win.loadURL(devServer);
-  } else {
-    win.loadFile(path.join(__dirname, "dist", "index.html"));
-  }
+  loadRenderer(win, {
+    defaultCloudUrl: "http://localhost:5184",
+    localFile: path.join(__dirname, "dist", "index.html"),
+  });
 
   if (!app.isPackaged) {
     win.webContents.on("before-input-event", (event, input) => {
