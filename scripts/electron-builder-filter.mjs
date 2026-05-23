@@ -4,7 +4,15 @@ import { execFileSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { fixElectronBuilderDep0190 } from "../../_shared/fix-electron-builder-dep0190.mjs";
+let fixElectronBuilderDep0190 = () => false;
+try {
+  const imported = await import('../../_shared/fix-electron-builder-dep0190.mjs');
+  if (typeof imported.fixElectronBuilderDep0190 === 'function') {
+    fixElectronBuilderDep0190 = imported.fixElectronBuilderDep0190;
+  }
+} catch {
+  // Shared patch helper not available; continue without it.
+}
 
 const productName = "SentenceMaker";
 const suppressedPatterns = ["duplicate dependency references"];
