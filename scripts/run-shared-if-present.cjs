@@ -11,7 +11,7 @@ if (!sharedFile) {
   process.exit(1);
 }
 
-const sharedPath = join(scriptDir, sharedFile);
+const sharedPath = join(scriptDir, '..', sharedFile);
 if (!existsSync(sharedPath)) {
   process.stdout.write(`Skipping missing shared helper: ${sharedFile}\n`);
   const helperName = sharedFile.split('/').pop();
