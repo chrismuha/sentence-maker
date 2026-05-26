@@ -9,6 +9,7 @@
     "main.js",
     "preload/**/*",
     "settings.json",
+    "startup-mode.cjs",
     "package.json"
   ],
   "forceCodeSigning": false,
