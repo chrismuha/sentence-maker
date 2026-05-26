@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, nativeImage } = require("electron");
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
@@ -12,6 +12,54 @@ try {
   // Shared live-reload helper is optional; continue without it.
 }
 const { loadRenderer } = require("./startup-mode.cjs");
+const APP_NAME = "Sentence Maker";
+const APP_ID = "com.muha.sentencemaker";
+
+function applyAppIdentity() {
+  app.setName(APP_NAME);
+  app.setAppUserModelId(APP_ID);
+
+  if (process.platform === "darwin") {
+    app.setAboutPanelOptions({
+      applicationName: APP_NAME,
+      applicationVersion: app.getVersion()
+    });
+  }
+}
+
+applyAppIdentity();
+
+function getResourceIconPath(fileName, fallbackFileNames = []) {
+  const candidates = [
+    path.join(process.resourcesPath, "assets", "icons", fileName),
+    path.join(app.getAppPath(), "assets", "icons", fileName),
+    path.join(__dirname, "assets", "icons", fileName),
+    ...fallbackFileNames.flatMap((fallbackFileName) => [
+      path.join(process.resourcesPath, "assets", "icons", fallbackFileName),
+      path.join(app.getAppPath(), "assets", "icons", fallbackFileName),
+      path.join(__dirname, "assets", "icons", fallbackFileName)
+    ])
+  ];
+
+  return candidates.find((candidate) => fs.existsSync(candidate)) || candidates[0];
+}
+
+function getAppIconPath() {
+  return process.platform === "darwin"
+    ? getResourceIconPath("icon.icns", ["icon.png"])
+    : getResourceIconPath("icon.png", ["icon.icns"]);
+}
+
+function applyMacDockIcon() {
+  if (process.platform !== "darwin" || !app.dock?.setIcon) {
+    return;
+  }
+
+  const dockIcon = nativeImage.createFromPath(getResourceIconPath("icon.png", ["icon.icns"]));
+  if (!dockIcon.isEmpty()) {
+    app.dock.setIcon(dockIcon);
+  }
+}
 
 function getBundledSettingsPath() {
   return path.join(__dirname, "settings.json");
@@ -76,6 +124,8 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 900,
     height: 700,
+    title: APP_NAME,
+    icon: getAppIconPath(),
     webPreferences: {
       preload: path.join(__dirname, "preload/main.js"),
       contextIsolation: true
@@ -109,6 +159,8 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  applyAppIdentity();
+  applyMacDockIcon();
   ensureSettingsFile();
 
   ipcMain.handle("settings:load", () => ensureSettingsFile());
