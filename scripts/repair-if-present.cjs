@@ -3,9 +3,13 @@ const { join, dirname } = require('path');
 const { spawnSync } = require('child_process');
 
 const scriptDir = dirname(__filename);
-const repairFile = join(scriptDir, '..', '..', '_shared', 'repair.mjs');
+const repairFileCandidates = [
+  join(scriptDir, '..', '..', '_shared', 'repair.mjs'),
+  join(scriptDir, '..', '_shared', 'repair.mjs'),
+];
+const repairFile = repairFileCandidates.find((candidate) => existsSync(candidate));
 
-if (!existsSync(repairFile)) {
+if (!repairFile) {
   process.exit(0);
 }
 
