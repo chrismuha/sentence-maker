@@ -1,4 +1,5 @@
 {
   "shortcutKey": null,
-  "insertBlankLines": true
+  "insertBlankLines": true,
+  "sortAlphabetically": false
 }

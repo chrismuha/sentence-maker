@@ -99,6 +99,14 @@ button:focus-visible {
   font-weight: 600;
 }
 
+.confirmation.error {
+  color: #b42318;
+}
+
+.confirmation.warning {
+  color: #9a5b00;
+}
+
 .shortcut-rules {
   margin: 0;
 }

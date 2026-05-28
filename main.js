@@ -76,7 +76,8 @@ function getDefaultSettings() {
   } catch {
     return {
       shortcutKey: null,
-      insertBlankLines: true
+      insertBlankLines: true,
+      sortAlphabetically: false
     };
   }
 }
@@ -98,7 +99,10 @@ function ensureSettingsFile() {
       shortcutKey: typeof parsed.shortcutKey === "string" ? parsed.shortcutKey : null,
       insertBlankLines: typeof parsed.insertBlankLines === "boolean"
         ? parsed.insertBlankLines
-        : Boolean(defaultSettings.insertBlankLines)
+        : Boolean(defaultSettings.insertBlankLines),
+      sortAlphabetically: typeof parsed.sortAlphabetically === "boolean"
+        ? parsed.sortAlphabetically
+        : Boolean(defaultSettings.sortAlphabetically)
     };
   } catch {
     return defaultSettings;
@@ -112,7 +116,10 @@ function saveSettings(nextSettings) {
     shortcutKey: typeof nextSettings?.shortcutKey === "string" ? nextSettings.shortcutKey : null,
     insertBlankLines: typeof nextSettings?.insertBlankLines === "boolean"
       ? nextSettings.insertBlankLines
-      : Boolean(defaultSettings.insertBlankLines)
+      : Boolean(defaultSettings.insertBlankLines),
+    sortAlphabetically: typeof nextSettings?.sortAlphabetically === "boolean"
+      ? nextSettings.sortAlphabetically
+      : Boolean(defaultSettings.sortAlphabetically)
   };
 
   fs.mkdirSync(path.dirname(settingsPath), { recursive: true });

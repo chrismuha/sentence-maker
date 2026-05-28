@@ -10,11 +10,14 @@ const closeSettings = document.getElementById("closeSettings");
 const shortcutHint = document.getElementById("shortcutHint");
 const breakConfirmation = document.getElementById("breakConfirmation");
 const blankLineSetting = document.getElementById("blankLineSetting");
+const alphabeticalSortSetting = document.getElementById("alphabeticalSortSetting");
 
 let shortcutKey = null; // normalized (lowercase) key name
 let pendingShortcut = null;
 let insertBlankLines = true;
 let pendingInsertBlankLines = true;
+let sortAlphabetically = false;
+let pendingSortAlphabetically = false;
 const pressedKeys = new Set();
 let notAllowedTimeout = null;
 let breakConfirmationTimeout = null;
@@ -25,7 +28,7 @@ settingsBtn.addEventListener("click", openSettings);
 closeSettings.addEventListener("click", hideSettings);
 backdrop.addEventListener("click", hideSettings);
 saveShortcut.addEventListener("click", () => {
-  applySettings(pendingShortcut, pendingInsertBlankLines);
+  applySettings(pendingShortcut, pendingInsertBlankLines, pendingSortAlphabetically);
   hideSettings();
 });
 clearShortcut.addEventListener("click", () => {
@@ -34,6 +37,9 @@ clearShortcut.addEventListener("click", () => {
 });
 blankLineSetting.addEventListener("change", event => {
   pendingInsertBlankLines = Boolean(event.target.checked);
+});
+alphabeticalSortSetting.addEventListener("change", event => {
+  pendingSortAlphabetically = Boolean(event.target.checked);
 });
 shortcutInput.addEventListener("keydown", event => {
   // Reset if we hit a fresh modifier chord to avoid stale keys
@@ -54,6 +60,7 @@ document.addEventListener("keydown", event => {
   if (!shortcutKey) return;
   if (!settingsPanel.classList.contains("hidden")) return;
   if (event.target === shortcutInput) return;
+  if (event.target === editor && !hasSystemModifier(event)) return;
 
   const normalized = normalizeKeyEvent(event, { pressedKeys });
   if (normalized && normalized === shortcutKey) {
@@ -67,24 +74,69 @@ document.addEventListener("keyup", event => {
 });
 window.addEventListener("blur", () => pressedKeys.clear());
 
+function hasSystemModifier(event) {
+  return event.metaKey || event.ctrlKey || event.altKey;
+}
+
 function breakSentences() {
+  clearBreakMessage();
   const text = editor.value.trim();
 
-  // Split only when punctuation is followed by whitespace/end, so URL dots like ".com" stay intact.
-  const sentences = text.length > 0 ? text.split(/(?<=[.!?])(?:\s+|$)/g) : [];
-  const separated = sentences.map(sentence => sentence.trim()).filter(Boolean);
+  if (text.length > 0 && !text.includes(".")) {
+    showBreakError("Add at least one period before breaking sentences.");
+    editor.focus();
+    return;
+  }
 
-  editor.value = separated.join(insertBlankLines ? "\n\n" : "\n");
+  const { breakableSentences, unbrokenSentences } = getSentenceBreakGroups(text);
+
+  if (breakableSentences.length === 0) {
+    showBreakError("Add a period at the end of at least one sentence before breaking.");
+    editor.focus();
+    return;
+  }
+
+  if (sortAlphabetically) {
+    breakableSentences.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  }
+
+  editor.value = [...breakableSentences, ...unbrokenSentences].join(insertBlankLines ? "\n\n" : "\n");
   editor.selectionStart = editor.selectionEnd = editor.value.length;
   editor.focus();
-  showBreakConfirmation(separated.length);
+  if (unbrokenSentences.length > 0) {
+    showBreakWarning("Some sentences were not broken because they did not have a period. Check sentences and try again.");
+  } else {
+    showBreakConfirmation(breakableSentences.length);
+  }
+}
+
+function getSentenceBreakGroups(text) {
+  const breakableSentences = [];
+  const unbrokenSentences = [];
+  const lines = text.split(/\r?\n/g).map(line => line.trim()).filter(Boolean);
+
+  lines.forEach(line => {
+    // Split only when a period is followed by whitespace/end, so URL dots like ".com" stay intact.
+    const sentences = line.split(/(?<=\.)(?:\s+|$)/g).map(sentence => sentence.trim()).filter(Boolean);
+    sentences.forEach(sentence => {
+      if (sentence.endsWith(".")) {
+        breakableSentences.push(sentence);
+      } else {
+        unbrokenSentences.push(sentence);
+      }
+    });
+  });
+
+  return { breakableSentences, unbrokenSentences };
 }
 
 function openSettings() {
   pendingShortcut = shortcutKey;
   pendingInsertBlankLines = insertBlankLines;
+  pendingSortAlphabetically = sortAlphabetically;
   shortcutInput.value = pendingShortcut ? formatKey(pendingShortcut) : "";
   blankLineSetting.checked = pendingInsertBlankLines;
+  alphabeticalSortSetting.checked = pendingSortAlphabetically;
   pressedKeys.clear();
   settingsPanel.classList.remove("hidden");
   backdrop.classList.remove("hidden");
@@ -97,9 +149,10 @@ function hideSettings() {
   backdrop.classList.add("hidden");
 }
 
-function applySettings(normalizedKey, useBlankLines) {
+function applySettings(normalizedKey, useBlankLines, useAlphabeticalSort) {
   shortcutKey = normalizedKey || null;
   insertBlankLines = Boolean(useBlankLines);
+  sortAlphabetically = Boolean(useAlphabeticalSort);
   saveSettings().catch(() => {
     // Ignore persistence errors; the app can still run in-memory.
   });
@@ -225,9 +278,8 @@ function formatKey(key) {
 
 function updateHint() {
   if (!shortcutKey) {
-    shortcutHint.textContent = insertBlankLines
-      ? "No keyboard shortcut assigned. Break adds blank lines between sentences."
-      : "No keyboard shortcut assigned.";
+    shortcutHint.textContent = "No keyboard shortcut assigned.";
+    appendOutputHint();
     return;
   }
 
@@ -242,13 +294,22 @@ function updateHint() {
     shortcutHint.textContent = `Shortcut: ${keyLabel} will break sentences.`;
   }
 
+  appendOutputHint();
+}
+
+function appendOutputHint() {
   if (insertBlankLines) {
-    shortcutHint.textContent += " Output will include blank lines between sentences.";
+    shortcutHint.textContent += " Break adds blank lines between sentences.";
+  }
+  if (sortAlphabetically) {
+    shortcutHint.textContent += " Break sorts sentences alphabetically.";
   }
 }
 
 function showBreakConfirmation(sentenceCount) {
   clearTimeout(breakConfirmationTimeout);
+  breakConfirmation.classList.remove("error");
+  breakConfirmation.classList.remove("warning");
   if (sentenceCount === 0) {
     breakConfirmation.textContent = "No sentences found to break.";
   } else if (sentenceCount === 1) {
@@ -262,12 +323,37 @@ function showBreakConfirmation(sentenceCount) {
   }, BREAK_CONFIRMATION_MS);
 }
 
+function showBreakWarning(message) {
+  clearBreakMessage();
+  breakConfirmation.textContent = message;
+  breakConfirmation.classList.remove("error");
+  breakConfirmation.classList.add("warning");
+  breakConfirmation.classList.remove("hidden");
+}
+
+function showBreakError(message) {
+  clearBreakMessage();
+  breakConfirmation.textContent = message;
+  breakConfirmation.classList.remove("warning");
+  breakConfirmation.classList.add("error");
+  breakConfirmation.classList.remove("hidden");
+}
+
+function clearBreakMessage() {
+  clearTimeout(breakConfirmationTimeout);
+  breakConfirmation.textContent = "";
+  breakConfirmation.classList.add("hidden");
+  breakConfirmation.classList.remove("error");
+  breakConfirmation.classList.remove("warning");
+}
+
 async function saveSettings() {
   if (!window.sentenceMakerSettings?.save) return;
 
   await window.sentenceMakerSettings.save({
     shortcutKey,
-    insertBlankLines
+    insertBlankLines,
+    sortAlphabetically
   });
 }
 
@@ -282,6 +368,10 @@ async function loadSettings() {
     if (typeof parsed.insertBlankLines === "boolean") {
       insertBlankLines = parsed.insertBlankLines;
       pendingInsertBlankLines = parsed.insertBlankLines;
+    }
+    if (typeof parsed.sortAlphabetically === "boolean") {
+      sortAlphabetically = parsed.sortAlphabetically;
+      pendingSortAlphabetically = parsed.sortAlphabetically;
     }
   } catch {
     // Ignore malformed or unavailable saved settings.
