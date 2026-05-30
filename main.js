@@ -184,7 +184,7 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+  if (!app.isPackaged || process.platform !== "darwin") {
     app.quit();
   }
 });
