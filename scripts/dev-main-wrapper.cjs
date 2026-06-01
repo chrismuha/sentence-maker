@@ -78,11 +78,22 @@ async function stopChild(child) {
 }
 
 const electronBin = binPath('electron');
-const args = ['.', '--disable-cache', ...process.argv.slice(2)];
+const args = [
+  '.',
+  '--disable-cache',
+  '--disable-gpu',
+  '--disable-gpu-compositing',
+  '--disable-logging',
+  '--log-level=3',
+  ...process.argv.slice(2),
+];
 const env = { ...process.env };
 // Ensure ELECTRON_RUN_AS_NODE is removed (unset)
 if (Object.prototype.hasOwnProperty.call(env, 'ELECTRON_RUN_AS_NODE')) {
   delete env.ELECTRON_RUN_AS_NODE;
+}
+if (Object.prototype.hasOwnProperty.call(env, 'ELECTRON_ENABLE_LOGGING')) {
+  delete env.ELECTRON_ENABLE_LOGGING;
 }
 env.NODE_ENV = process.env.NODE_ENV || 'development';
 

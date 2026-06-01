@@ -147,7 +147,7 @@ async function main() {
   const electronBin = binPath('electron');
 
   const renderer = spawnProcess(viteBin, ['dev', '--host', '127.0.0.1', '--port', String(freePort)], env);
-  const main = spawnProcess(electronBin, ['.', '--disable-cache'], env);
+  const main = spawnProcess(electronBin, ['.', '--disable-cache', '--disable-gpu', '--disable-gpu-compositing', '--disable-logging', '--log-level=3'], env);
 
   let cleanupCalled = false;
   let parentMonitor = null;

@@ -1,4 +1,10 @@
 const { app, BrowserWindow, ipcMain, nativeImage } = require("electron");
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.commandLine.appendSwitch('disable-logging');
+app.commandLine.appendSwitch('log-level', '3');
+
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
