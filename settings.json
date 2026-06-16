@@ -1,5 +1,13 @@
 {
   "shortcutKey": null,
   "insertBlankLines": true,
-  "sortAlphabetically": false
+  "sortAlphabetically": false,
+  "sentenceEndingCharacters": [
+    ".",
+    ";",
+    "?",
+    "!",
+    ":",
+    "\""
+  ]
 }

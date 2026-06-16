@@ -6,11 +6,14 @@ const backdrop = document.getElementById("backdrop");
 const shortcutInput = document.getElementById("shortcutInput");
 const saveShortcut = document.getElementById("saveShortcut");
 const clearShortcut = document.getElementById("clearShortcut");
+const resetSettings = document.getElementById("resetSettings");
 const closeSettings = document.getElementById("closeSettings");
 const shortcutHint = document.getElementById("shortcutHint");
 const breakConfirmation = document.getElementById("breakConfirmation");
 const blankLineSetting = document.getElementById("blankLineSetting");
 const alphabeticalSortSetting = document.getElementById("alphabeticalSortSetting");
+const endingSettings = Array.from(document.querySelectorAll("[data-ending-character]"));
+const customEndingInput = document.getElementById("customEndingInput");
 
 let shortcutKey = null; // normalized (lowercase) key name
 let pendingShortcut = null;
@@ -18,10 +21,14 @@ let insertBlankLines = true;
 let pendingInsertBlankLines = true;
 let sortAlphabetically = false;
 let pendingSortAlphabetically = false;
+const DEFAULT_SENTENCE_ENDING_CHARACTERS = [".", ";", "?", "!", ":", "\""];
+let sentenceEndingCharacters = [...DEFAULT_SENTENCE_ENDING_CHARACTERS];
+let pendingSentenceEndingCharacters = [...sentenceEndingCharacters];
 const pressedKeys = new Set();
 let notAllowedTimeout = null;
 let breakConfirmationTimeout = null;
 const BREAK_CONFIRMATION_MS = 5000;
+const CLOSING_SENTENCE_WRAPPERS = new Set([")", "]", "}", "\"", "'", "”", "’", "»"]);
 
 breakBtn.addEventListener("click", breakSentences);
 settingsBtn.addEventListener("click", openSettings);
@@ -35,12 +42,17 @@ clearShortcut.addEventListener("click", () => {
   pendingShortcut = null;
   shortcutInput.value = "";
 });
+resetSettings.addEventListener("click", resetPendingSettingsToDefaults);
 blankLineSetting.addEventListener("change", event => {
   pendingInsertBlankLines = Boolean(event.target.checked);
 });
 alphabeticalSortSetting.addEventListener("change", event => {
   pendingSortAlphabetically = Boolean(event.target.checked);
 });
+endingSettings.forEach(input => {
+  input.addEventListener("change", updatePendingSentenceEndings);
+});
+customEndingInput.addEventListener("input", updatePendingSentenceEndings);
 shortcutInput.addEventListener("keydown", event => {
   // Reset if we hit a fresh modifier chord to avoid stale keys
   if (event.metaKey || event.altKey || event.ctrlKey) {
@@ -81,17 +93,24 @@ function hasSystemModifier(event) {
 function breakSentences() {
   clearBreakMessage();
   const text = editor.value.trim();
+  const activeSentenceEndings = getSentenceEndingSet();
 
-  if (text.length > 0 && !text.includes(".")) {
-    showBreakError("Add at least one period before breaking sentences.");
+  if (activeSentenceEndings.size === 0) {
+    showBreakError("Choose at least one sentence ending in Settings.");
     editor.focus();
     return;
   }
 
-  const { breakableSentences, unbrokenSentences } = getSentenceBreakGroups(text);
+  if (text.length > 0 && !hasAnySentenceEnding(text, activeSentenceEndings)) {
+    showBreakError(`Add at least one sentence ending (${formatSentenceEndings(sentenceEndingCharacters)}) before breaking sentences.`);
+    editor.focus();
+    return;
+  }
+
+  const { breakableSentences, unbrokenSentences } = getSentenceBreakGroups(text, activeSentenceEndings);
 
   if (breakableSentences.length === 0) {
-    showBreakError("Add a period at the end of at least one sentence before breaking.");
+    showBreakError(`Add a sentence ending (${formatSentenceEndings(sentenceEndingCharacters)}) to at least one sentence before breaking.`);
     editor.focus();
     return;
   }
@@ -104,22 +123,21 @@ function breakSentences() {
   editor.selectionStart = editor.selectionEnd = editor.value.length;
   editor.focus();
   if (unbrokenSentences.length > 0) {
-    showBreakWarning("Some sentences were not broken because they did not have a period. Check sentences and try again.");
+    showBreakWarning(`Some sentences were not broken because they did not have a selected sentence ending (${formatSentenceEndings(sentenceEndingCharacters)}). Check sentences and try again.`);
   } else {
     showBreakConfirmation(breakableSentences.length);
   }
 }
 
-function getSentenceBreakGroups(text) {
+function getSentenceBreakGroups(text, sentenceEndings = getSentenceEndingSet()) {
   const breakableSentences = [];
   const unbrokenSentences = [];
   const lines = text.split(/\r?\n/g).map(line => line.trim()).filter(Boolean);
 
   lines.forEach(line => {
-    // Split only when a period is followed by whitespace/end, so URL dots like ".com" stay intact.
-    const sentences = line.split(/(?<=\.)(?:\s+|$)/g).map(sentence => sentence.trim()).filter(Boolean);
+    const sentences = splitLineIntoSentences(line, sentenceEndings);
     sentences.forEach(sentence => {
-      if (sentence.endsWith(".")) {
+      if (endsWithSentenceEnding(sentence, sentenceEndings)) {
         breakableSentences.push(sentence);
       } else {
         unbrokenSentences.push(sentence);
@@ -130,13 +148,105 @@ function getSentenceBreakGroups(text) {
   return { breakableSentences, unbrokenSentences };
 }
 
+function splitLineIntoSentences(line, sentenceEndings) {
+  const sentences = [];
+  let sentenceStart = 0;
+
+  for (let index = 0; index < line.length; index += 1) {
+    if (!sentenceEndings.has(line[index])) continue;
+
+    let sentenceEnd = index + 1;
+    while (sentenceEnd < line.length && CLOSING_SENTENCE_WRAPPERS.has(line[sentenceEnd])) {
+      sentenceEnd += 1;
+    }
+
+    if (sentenceEnd === line.length || /\s/.test(line[sentenceEnd])) {
+      const sentence = line.slice(sentenceStart, sentenceEnd).trim();
+      if (sentence) sentences.push(sentence);
+      sentenceStart = sentenceEnd;
+      while (sentenceStart < line.length && /\s/.test(line[sentenceStart])) {
+        sentenceStart += 1;
+      }
+      index = sentenceStart - 1;
+    }
+  }
+
+  const remainder = line.slice(sentenceStart).trim();
+  if (remainder) sentences.push(remainder);
+  return sentences;
+}
+
+function endsWithSentenceEnding(sentence, sentenceEndings) {
+  for (let index = sentence.length - 1; index >= 0; index -= 1) {
+    const character = sentence[index];
+    if (CLOSING_SENTENCE_WRAPPERS.has(character)) continue;
+    return sentenceEndings.has(character);
+  }
+  return false;
+}
+
+function hasAnySentenceEnding(text, sentenceEndings) {
+  for (const character of text) {
+    if (sentenceEndings.has(character)) return true;
+  }
+  return false;
+}
+
+function getSentenceEndingSet() {
+  return new Set(sentenceEndingCharacters);
+}
+
+function normalizeSentenceEndings(value) {
+  if (!Array.isArray(value)) return [...DEFAULT_SENTENCE_ENDING_CHARACTERS];
+  return Array.from(new Set(value.filter(character => typeof character === "string").flatMap(character => Array.from(character.trim()))));
+}
+
+function getCustomSentenceEndingsFromInput() {
+  const builtInCharacters = new Set(endingSettings.map(input => input.dataset.endingCharacter));
+  return Array.from(customEndingInput.value).filter(character => character.trim() && !builtInCharacters.has(character));
+}
+
+function updatePendingSentenceEndings() {
+  pendingSentenceEndingCharacters = [
+    ...endingSettings.filter(input => input.checked).map(input => input.dataset.endingCharacter),
+    ...getCustomSentenceEndingsFromInput()
+  ];
+}
+
+function syncSentenceEndingControls(characters) {
+  const selected = new Set(characters);
+  const builtInCharacters = new Set(endingSettings.map(input => input.dataset.endingCharacter));
+
+  endingSettings.forEach(input => {
+    input.checked = selected.has(input.dataset.endingCharacter);
+  });
+  customEndingInput.value = characters.filter(character => !builtInCharacters.has(character)).join("");
+}
+
+function formatSentenceEndings(characters) {
+  return characters.length > 0 ? characters.join(" ") : "none selected";
+}
+
+function resetPendingSettingsToDefaults() {
+  pendingShortcut = null;
+  pendingInsertBlankLines = true;
+  pendingSortAlphabetically = false;
+  pendingSentenceEndingCharacters = [...DEFAULT_SENTENCE_ENDING_CHARACTERS];
+  shortcutInput.value = "";
+  blankLineSetting.checked = pendingInsertBlankLines;
+  alphabeticalSortSetting.checked = pendingSortAlphabetically;
+  syncSentenceEndingControls(pendingSentenceEndingCharacters);
+}
+
 function openSettings() {
   pendingShortcut = shortcutKey;
   pendingInsertBlankLines = insertBlankLines;
   pendingSortAlphabetically = sortAlphabetically;
+  pendingSentenceEndingCharacters = [...sentenceEndingCharacters];
   shortcutInput.value = pendingShortcut ? formatKey(pendingShortcut) : "";
   blankLineSetting.checked = pendingInsertBlankLines;
   alphabeticalSortSetting.checked = pendingSortAlphabetically;
+  syncSentenceEndingControls(pendingSentenceEndingCharacters);
   pressedKeys.clear();
   settingsPanel.classList.remove("hidden");
   backdrop.classList.remove("hidden");
@@ -149,10 +259,11 @@ function hideSettings() {
   backdrop.classList.add("hidden");
 }
 
-function applySettings(normalizedKey, useBlankLines, useAlphabeticalSort) {
+function applySettings(normalizedKey, useBlankLines, useAlphabeticalSort, selectedSentenceEndings = pendingSentenceEndingCharacters) {
   shortcutKey = normalizedKey || null;
   insertBlankLines = Boolean(useBlankLines);
   sortAlphabetically = Boolean(useAlphabeticalSort);
+  sentenceEndingCharacters = normalizeSentenceEndings(selectedSentenceEndings);
   saveSettings().catch(() => {
     // Ignore persistence errors; the app can still run in-memory.
   });
@@ -353,7 +464,8 @@ async function saveSettings() {
   await window.sentenceMakerSettings.save({
     shortcutKey,
     insertBlankLines,
-    sortAlphabetically
+    sortAlphabetically,
+    sentenceEndingCharacters
   });
 }
 
@@ -372,6 +484,10 @@ async function loadSettings() {
     if (typeof parsed.sortAlphabetically === "boolean") {
       sortAlphabetically = parsed.sortAlphabetically;
       pendingSortAlphabetically = parsed.sortAlphabetically;
+    }
+    if (Array.isArray(parsed.sentenceEndingCharacters)) {
+      sentenceEndingCharacters = normalizeSentenceEndings(parsed.sentenceEndingCharacters);
+      pendingSentenceEndingCharacters = [...sentenceEndingCharacters];
     }
   } catch {
     // Ignore malformed or unavailable saved settings.

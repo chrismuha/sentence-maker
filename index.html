@@ -32,6 +32,37 @@
       <input id="alphabeticalSortSetting" type="checkbox" />
       Sort broken sentences alphabetically
     </label>
+    <div class="sentence-ending-settings" aria-labelledby="sentenceEndingTitle">
+      <h3 id="sentenceEndingTitle">Treat as period</h3>
+      <div class="sentence-ending-grid">
+        <label class="setting-toggle" for="periodEndingSetting">
+          <input id="periodEndingSetting" type="checkbox" data-ending-character="." />
+          Period .
+        </label>
+        <label class="setting-toggle" for="semicolonEndingSetting">
+          <input id="semicolonEndingSetting" type="checkbox" data-ending-character=";" />
+          Semicolon ;
+        </label>
+        <label class="setting-toggle" for="questionEndingSetting">
+          <input id="questionEndingSetting" type="checkbox" data-ending-character="?" />
+          Question ?
+        </label>
+        <label class="setting-toggle" for="exclamationEndingSetting">
+          <input id="exclamationEndingSetting" type="checkbox" data-ending-character="!" />
+          Exclamation !
+        </label>
+        <label class="setting-toggle" for="colonEndingSetting">
+          <input id="colonEndingSetting" type="checkbox" data-ending-character=":" />
+          Colon :
+        </label>
+        <label class="setting-toggle" for="quoteEndingSetting">
+          <input id="quoteEndingSetting" type="checkbox" data-ending-character="&quot;" />
+          Quote "
+        </label>
+      </div>
+      <label for="customEndingInput">Custom characters</label>
+      <input id="customEndingInput" type="text" placeholder="Example: | /" />
+    </div>
     <details class="shortcut-rules">
       <summary>Shortcut rules</summary>
       <p class="hint">Letters/numbers or symbols alone are not allowed (press two together to assign combos, including
@@ -42,6 +73,7 @@
     <div class="settings-actions">
       <button id="saveShortcut" type="button">Save</button>
       <button id="clearShortcut" type="button">Clear</button>
+      <button id="resetSettings" type="button">Reset Defaults</button>
       <button id="closeSettings" type="button">Close</button>
     </div>
   </div>
