@@ -1,5 +1,6 @@
 const editor = document.getElementById("editor");
 const breakBtn = document.getElementById("breakBtn");
+const clearTextBtn = document.getElementById("clearTextBtn");
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
 const backdrop = document.getElementById("backdrop");
@@ -12,6 +13,7 @@ const shortcutHint = document.getElementById("shortcutHint");
 const breakConfirmation = document.getElementById("breakConfirmation");
 const blankLineSetting = document.getElementById("blankLineSetting");
 const alphabeticalSortSetting = document.getElementById("alphabeticalSortSetting");
+const preservePasteFormattingSetting = document.getElementById("preservePasteFormattingSetting");
 const endingSettings = Array.from(document.querySelectorAll("[data-ending-character]"));
 const customEndingInput = document.getElementById("customEndingInput");
 
@@ -21,21 +23,25 @@ let insertBlankLines = true;
 let pendingInsertBlankLines = true;
 let sortAlphabetically = false;
 let pendingSortAlphabetically = false;
+let preservePasteFormatting = true;
+let pendingPreservePasteFormatting = true;
 const DEFAULT_SENTENCE_ENDING_CHARACTERS = [".", ";", "?", "!", ":", "\""];
 let sentenceEndingCharacters = [...DEFAULT_SENTENCE_ENDING_CHARACTERS];
 let pendingSentenceEndingCharacters = [...sentenceEndingCharacters];
 const pressedKeys = new Set();
 let notAllowedTimeout = null;
 let breakConfirmationTimeout = null;
+let failedSentenceBeingEdited = null;
 const BREAK_CONFIRMATION_MS = 5000;
 const CLOSING_SENTENCE_WRAPPERS = new Set([")", "]", "}", "\"", "'", "”", "’", "»"]);
 
 breakBtn.addEventListener("click", breakSentences);
+clearTextBtn.addEventListener("click", clearEditorText);
 settingsBtn.addEventListener("click", openSettings);
 closeSettings.addEventListener("click", hideSettings);
 backdrop.addEventListener("click", hideSettings);
 saveShortcut.addEventListener("click", () => {
-  applySettings(pendingShortcut, pendingInsertBlankLines, pendingSortAlphabetically);
+  applySettings(pendingShortcut, pendingInsertBlankLines, pendingSortAlphabetically, pendingPreservePasteFormatting);
   hideSettings();
 });
 clearShortcut.addEventListener("click", () => {
@@ -48,6 +54,9 @@ blankLineSetting.addEventListener("change", event => {
 });
 alphabeticalSortSetting.addEventListener("change", event => {
   pendingSortAlphabetically = Boolean(event.target.checked);
+});
+preservePasteFormattingSetting.addEventListener("change", event => {
+  pendingPreservePasteFormatting = Boolean(event.target.checked);
 });
 endingSettings.forEach(input => {
   input.addEventListener("change", updatePendingSentenceEndings);
@@ -85,14 +94,47 @@ document.addEventListener("keyup", event => {
   pressedKeys.delete((event.key || "").toLowerCase());
 });
 window.addEventListener("blur", () => pressedKeys.clear());
+editor.addEventListener("beforeinput", event => {
+  failedSentenceBeingEdited = getSelectedFailedSentence();
+});
+editor.addEventListener("paste", event => {
+  failedSentenceBeingEdited = getSelectedFailedSentence();
+
+  if (preservePasteFormatting) return;
+
+  const text = event.clipboardData?.getData("text/plain") || "";
+  event.preventDefault();
+  insertPlainTextAtSelection(text);
+  if (failedSentenceBeingEdited?.isConnected) {
+    resetFailedSentenceColor(failedSentenceBeingEdited);
+    failedSentenceBeingEdited = null;
+  }
+});
+editor.addEventListener("input", () => {
+  const editedFailedSentence = failedSentenceBeingEdited?.isConnected
+    ? failedSentenceBeingEdited
+    : getSelectedFailedSentence();
+
+  if (editedFailedSentence?.isConnected) {
+    resetFailedSentenceColor(editedFailedSentence);
+    failedSentenceBeingEdited = null;
+  }
+});
 
 function hasSystemModifier(event) {
   return event.metaKey || event.ctrlKey || event.altKey;
 }
 
+function clearEditorText() {
+  editor.replaceChildren();
+  failedSentenceBeingEdited = null;
+  clearBreakMessage();
+  editor.focus();
+}
+
 function breakSentences() {
   clearBreakMessage();
-  const text = editor.value.trim();
+  const text = getEditorText().trim();
   const activeSentenceEndings = getSentenceEndingSet();
 
   if (activeSentenceEndings.size === 0) {
@@ -119,14 +161,106 @@ function breakSentences() {
     breakableSentences.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   }
 
-  editor.value = [...breakableSentences, ...unbrokenSentences].join(insertBlankLines ? "\n\n" : "\n");
-  editor.selectionStart = editor.selectionEnd = editor.value.length;
+  setBrokenEditorContent(breakableSentences, unbrokenSentences);
+  placeCaretAtEnd(editor);
   editor.focus();
   if (unbrokenSentences.length > 0) {
     showBreakWarning(`Some sentences were not broken because they did not have a selected sentence ending (${formatSentenceEndings(sentenceEndingCharacters)}). Check sentences and try again.`);
   } else {
     showBreakConfirmation(breakableSentences.length);
   }
+}
+
+function getEditorText() {
+  return editor.innerText || editor.textContent || "";
+}
+
+function setBrokenEditorContent(breakableSentences, unbrokenSentences) {
+  editor.replaceChildren();
+  const outputSentences = [
+    ...breakableSentences.map(sentence => ({ sentence, failed: false })),
+    ...unbrokenSentences.map(sentence => ({ sentence, failed: true }))
+  ];
+
+  outputSentences.forEach(({ sentence, failed }, index) => {
+    if (index > 0) {
+      editor.appendChild(document.createElement("br"));
+      if (insertBlankLines) {
+        editor.appendChild(document.createElement("br"));
+      }
+    }
+
+    if (failed) {
+      const span = document.createElement("span");
+      span.className = "failed-sentence";
+      span.textContent = sentence;
+      editor.appendChild(span);
+    } else {
+      editor.appendChild(document.createTextNode(sentence));
+    }
+  });
+}
+
+function insertPlainTextAtSelection(text) {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return;
+
+  selection.deleteFromDocument();
+  const range = selection.getRangeAt(0);
+  const lines = text.split(/\r?\n/);
+  const fragment = document.createDocumentFragment();
+  let lastNode = null;
+
+  lines.forEach((line, index) => {
+    if (index > 0) {
+      lastNode = document.createElement("br");
+      fragment.appendChild(lastNode);
+    }
+    lastNode = document.createTextNode(line);
+    fragment.appendChild(lastNode);
+  });
+
+  range.insertNode(fragment);
+  if (lastNode) {
+    range.setStartAfter(lastNode);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
+
+function getSelectedFailedSentence() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return null;
+
+  const node = selection.anchorNode;
+  const element = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
+  return element?.closest?.(".failed-sentence") || getAdjacentFailedSentence(selection);
+}
+
+function getAdjacentFailedSentence(selection) {
+  const range = selection.getRangeAt(0);
+  const container = range.startContainer;
+  if (container !== editor) return null;
+
+  const previous = editor.childNodes[range.startOffset - 1];
+  const next = editor.childNodes[range.startOffset];
+  if (previous?.classList?.contains("failed-sentence")) return previous;
+  if (next?.classList?.contains("failed-sentence")) return next;
+  return null;
+}
+
+function resetFailedSentenceColor(span) {
+  span.classList.remove("failed-sentence");
+}
+
+function placeCaretAtEnd(element) {
+  const range = document.createRange();
+  const selection = window.getSelection();
+  range.selectNodeContents(element);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 function getSentenceBreakGroups(text, sentenceEndings = getSentenceEndingSet()) {
@@ -231,10 +365,12 @@ function resetPendingSettingsToDefaults() {
   pendingShortcut = null;
   pendingInsertBlankLines = true;
   pendingSortAlphabetically = false;
+  pendingPreservePasteFormatting = true;
   pendingSentenceEndingCharacters = [...DEFAULT_SENTENCE_ENDING_CHARACTERS];
   shortcutInput.value = "";
   blankLineSetting.checked = pendingInsertBlankLines;
   alphabeticalSortSetting.checked = pendingSortAlphabetically;
+  preservePasteFormattingSetting.checked = pendingPreservePasteFormatting;
   syncSentenceEndingControls(pendingSentenceEndingCharacters);
 }
 
@@ -242,10 +378,12 @@ function openSettings() {
   pendingShortcut = shortcutKey;
   pendingInsertBlankLines = insertBlankLines;
   pendingSortAlphabetically = sortAlphabetically;
+  pendingPreservePasteFormatting = preservePasteFormatting;
   pendingSentenceEndingCharacters = [...sentenceEndingCharacters];
   shortcutInput.value = pendingShortcut ? formatKey(pendingShortcut) : "";
   blankLineSetting.checked = pendingInsertBlankLines;
   alphabeticalSortSetting.checked = pendingSortAlphabetically;
+  preservePasteFormattingSetting.checked = pendingPreservePasteFormatting;
   syncSentenceEndingControls(pendingSentenceEndingCharacters);
   pressedKeys.clear();
   settingsPanel.classList.remove("hidden");
@@ -259,10 +397,11 @@ function hideSettings() {
   backdrop.classList.add("hidden");
 }
 
-function applySettings(normalizedKey, useBlankLines, useAlphabeticalSort, selectedSentenceEndings = pendingSentenceEndingCharacters) {
+function applySettings(normalizedKey, useBlankLines, useAlphabeticalSort, usePasteFormatting, selectedSentenceEndings = pendingSentenceEndingCharacters) {
   shortcutKey = normalizedKey || null;
   insertBlankLines = Boolean(useBlankLines);
   sortAlphabetically = Boolean(useAlphabeticalSort);
+  preservePasteFormatting = Boolean(usePasteFormatting);
   sentenceEndingCharacters = normalizeSentenceEndings(selectedSentenceEndings);
   saveSettings().catch(() => {
     // Ignore persistence errors; the app can still run in-memory.
@@ -465,6 +604,7 @@ async function saveSettings() {
     shortcutKey,
     insertBlankLines,
     sortAlphabetically,
+    preservePasteFormatting,
     sentenceEndingCharacters
   });
 }
@@ -484,6 +624,10 @@ async function loadSettings() {
     if (typeof parsed.sortAlphabetically === "boolean") {
       sortAlphabetically = parsed.sortAlphabetically;
       pendingSortAlphabetically = parsed.sortAlphabetically;
+    }
+    if (typeof parsed.preservePasteFormatting === "boolean") {
+      preservePasteFormatting = parsed.preservePasteFormatting;
+      pendingPreservePasteFormatting = parsed.preservePasteFormatting;
     }
     if (Array.isArray(parsed.sentenceEndingCharacters)) {
       sentenceEndingCharacters = normalizeSentenceEndings(parsed.sentenceEndingCharacters);

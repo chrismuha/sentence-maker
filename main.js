@@ -83,7 +83,8 @@ function getDefaultSettings() {
     return {
       shortcutKey: null,
       insertBlankLines: true,
-      sortAlphabetically: false
+      sortAlphabetically: false,
+      preservePasteFormatting: true
     };
   }
 }
@@ -121,6 +122,9 @@ function ensureSettingsFile() {
       sortAlphabetically: typeof parsed.sortAlphabetically === "boolean"
         ? parsed.sortAlphabetically
         : Boolean(defaultSettings.sortAlphabetically),
+      preservePasteFormatting: typeof parsed.preservePasteFormatting === "boolean"
+        ? parsed.preservePasteFormatting
+        : defaultSettings.preservePasteFormatting !== false,
       sentenceEndingCharacters: normalizeSentenceEndings(
         parsed.sentenceEndingCharacters,
         defaultSettings.sentenceEndingCharacters
@@ -142,6 +146,9 @@ function saveSettings(nextSettings) {
     sortAlphabetically: typeof nextSettings?.sortAlphabetically === "boolean"
       ? nextSettings.sortAlphabetically
       : Boolean(defaultSettings.sortAlphabetically),
+    preservePasteFormatting: typeof nextSettings?.preservePasteFormatting === "boolean"
+      ? nextSettings.preservePasteFormatting
+      : defaultSettings.preservePasteFormatting !== false,
     sentenceEndingCharacters: normalizeSentenceEndings(
       nextSettings?.sentenceEndingCharacters,
       defaultSettings.sentenceEndingCharacters

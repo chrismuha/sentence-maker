@@ -2,6 +2,7 @@
   "shortcutKey": null,
   "insertBlankLines": true,
   "sortAlphabetically": false,
+  "preservePasteFormatting": true,
   "sentenceEndingCharacters": [
     ".",
     ";",

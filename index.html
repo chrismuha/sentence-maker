@@ -10,9 +10,10 @@
 
 <body>
   <div class="app">
-    <textarea id="editor" placeholder="Type your text here..."></textarea>
+    <div id="editor" class="editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Type your text here..."></div>
     <div class="controls">
       <button id="breakBtn">Break</button>
+      <button id="clearTextBtn" type="button">Clear</button>
       <button id="settingsBtn" type="button">Settings</button>
     </div>
     <p id="breakConfirmation" class="confirmation hidden" role="status" aria-live="polite"></p>
@@ -28,6 +29,10 @@
       <input id="blankLineSetting" type="checkbox" />
       Insert blank lines between broken sentences
     </label>
+    <label class="setting-toggle" for="preservePasteFormattingSetting">
+      <input id="preservePasteFormattingSetting" type="checkbox" />
+      Preserve formatting from paste
+    </label>
     <label class="setting-toggle" for="alphabeticalSortSetting">
       <input id="alphabeticalSortSetting" type="checkbox" />
       Sort broken sentences alphabetically
@@ -38,10 +43,6 @@
         <label class="setting-toggle" for="periodEndingSetting">
           <input id="periodEndingSetting" type="checkbox" data-ending-character="." />
           Period .
-        </label>
-        <label class="setting-toggle" for="semicolonEndingSetting">
-          <input id="semicolonEndingSetting" type="checkbox" data-ending-character=";" />
-          Semicolon ;
         </label>
         <label class="setting-toggle" for="questionEndingSetting">
           <input id="questionEndingSetting" type="checkbox" data-ending-character="?" />
@@ -54,6 +55,10 @@
         <label class="setting-toggle" for="colonEndingSetting">
           <input id="colonEndingSetting" type="checkbox" data-ending-character=":" />
           Colon :
+        </label>
+                <label class="setting-toggle" for="semicolonEndingSetting">
+          <input id="semicolonEndingSetting" type="checkbox" data-ending-character=";" />
+          Semicolon ;
         </label>
         <label class="setting-toggle" for="quoteEndingSetting">
           <input id="quoteEndingSetting" type="checkbox" data-ending-character="&quot;" />
