@@ -88,6 +88,18 @@ function getDefaultSettings() {
   }
 }
 
+function normalizeSentenceEndings(value, fallbackValue) {
+  if (!Array.isArray(value)) {
+    return Array.isArray(fallbackValue) ? fallbackValue : [];
+  }
+
+  return Array.from(new Set(
+    value
+      .filter(character => typeof character === "string")
+      .flatMap(character => Array.from(character.trim()))
+  ));
+}
+
 function ensureSettingsFile() {
   const settingsPath = getUserSettingsPath();
   const defaultSettings = getDefaultSettings();
@@ -108,7 +120,11 @@ function ensureSettingsFile() {
         : Boolean(defaultSettings.insertBlankLines),
       sortAlphabetically: typeof parsed.sortAlphabetically === "boolean"
         ? parsed.sortAlphabetically
-        : Boolean(defaultSettings.sortAlphabetically)
+        : Boolean(defaultSettings.sortAlphabetically),
+      sentenceEndingCharacters: normalizeSentenceEndings(
+        parsed.sentenceEndingCharacters,
+        defaultSettings.sentenceEndingCharacters
+      )
     };
   } catch {
     return defaultSettings;
@@ -125,7 +141,11 @@ function saveSettings(nextSettings) {
       : Boolean(defaultSettings.insertBlankLines),
     sortAlphabetically: typeof nextSettings?.sortAlphabetically === "boolean"
       ? nextSettings.sortAlphabetically
-      : Boolean(defaultSettings.sortAlphabetically)
+      : Boolean(defaultSettings.sortAlphabetically),
+    sentenceEndingCharacters: normalizeSentenceEndings(
+      nextSettings?.sentenceEndingCharacters,
+      defaultSettings.sentenceEndingCharacters
+    )
   };
 
   fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
