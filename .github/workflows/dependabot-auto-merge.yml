@@ -1,7 +1,7 @@
 # Copy this file to .github/workflows/dependabot-auto-merge.yml in a repository.
 # In that repository, enable Settings > General > Pull Requests > Allow auto-merge.
-# Patch and minor Dependabot updates will be squash-merged after required checks pass.
-# Major updates remain open for manual review.
+# All Dependabot updates, including major versions, will be squash-merged after
+# required checks pass.
 
 name: Dependabot auto-merge
 
@@ -25,10 +25,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Enable auto-merge for patch and minor updates
-        if: >-
-          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
-          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+      - name: Enable auto-merge
         run: gh pr merge --auto --squash --delete-branch "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
