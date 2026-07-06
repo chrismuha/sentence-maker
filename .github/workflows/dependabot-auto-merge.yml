@@ -1,6 +1,4 @@
-# Copy this file to .github/workflows/dependabot-auto-merge.yml in a repository.
-# In that repository, enable Settings > General > Pull Requests > Allow auto-merge.
-# All Dependabot updates, including major versions, will be squash-merged after
+# All Dependabot updates, including major versions, are squash-merged after
 # required checks pass.
 
 name: Dependabot auto-merge
