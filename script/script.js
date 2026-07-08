@@ -34,6 +34,44 @@ let breakConfirmationTimeout = null;
 let failedSentenceBeingEdited = null;
 const BREAK_CONFIRMATION_MS = 5000;
 const CLOSING_SENTENCE_WRAPPERS = new Set([")", "]", "}", "\"", "'", "”", "’", "»"]);
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
+
+function getFocusableElements() {
+  return Array.from(document.querySelectorAll(FOCUSABLE_SELECTOR)).filter(element => {
+    if (!(element instanceof HTMLElement)) return false;
+    if (element.hidden || element.getAttribute("aria-hidden") === "true") return false;
+    const style = window.getComputedStyle(element);
+    return style.display !== "none" && style.visibility !== "hidden";
+  });
+}
+
+function handleTabAndEscapeFocus(event) {
+  if (event.defaultPrevented) return;
+
+  if (event.key === "Escape") {
+    const active = document.activeElement;
+    if (active && active !== document.body && active !== document.documentElement && typeof active.blur === "function") {
+      active.blur();
+    }
+    return;
+  }
+
+  if (event.key !== "Tab" || event.altKey || event.ctrlKey || event.metaKey) return;
+
+  const focusable = getFocusableElements();
+  const currentIndex = focusable.indexOf(document.activeElement);
+  if (currentIndex === -1 || focusable.length < 2) return;
+
+  const target = event.shiftKey && currentIndex === 0
+    ? focusable[focusable.length - 1]
+    : !event.shiftKey && currentIndex === focusable.length - 1
+      ? focusable[0]
+      : null;
+
+  if (!target) return;
+  event.preventDefault();
+  target.focus({ preventScroll: true });
+}
 
 breakBtn.addEventListener("click", breakSentences);
 clearTextBtn.addEventListener("click", clearEditorText);
@@ -76,6 +114,7 @@ shortcutInput.addEventListener("keyup", event => {
 shortcutInput.addEventListener("blur", () => pressedKeys.clear());
 
 document.addEventListener("keydown", event => {
+  handleTabAndEscapeFocus(event);
   pressedKeys.add((event.key || "").toLowerCase());
 
   if (!shortcutKey) return;
