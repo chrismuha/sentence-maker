@@ -22,6 +22,7 @@
 
   <div id="backdrop" class="backdrop hidden"></div>
   <div id="settingsPanel" class="settings hidden" role="dialog" aria-modal="true">
+    <button id="closeSettings" class="settings-close" type="button" aria-label="Close settings">Close</button>
     <h2>Shortcut</h2>
     <label for="shortcutInput">Press a key to trigger break.</label>
     <input id="shortcutInput" type="text" placeholder="Press a key..." readonly />
@@ -72,14 +73,20 @@
       <summary>Shortcut rules</summary>
       <p class="hint">Letters/numbers or symbols alone are not allowed (press two together to assign combos, including
         space/backspace combos). Space/Enter/Backspace can be assigned and will break instead of inserting/deleting.
-        Shift+Shift is blocked. Alt/Cmd (Option/Windows) combos (including with Shift) are allowed. Save an empty value
-        to clear.</p>
+        Shift+Shift is blocked. Alt/Cmd (Option/Windows) combos (including with Shift) are allowed.</p>
     </details>
+    <div class="settings-location" aria-labelledby="settingsLocationTitle">
+      <h3 id="settingsLocationTitle">Saved settings location</h3>
+      <label for="settingsFileDir">Folder</label>
+      <div class="settings-location-row">
+        <input id="settingsFileDir" type="text" readonly value="Loading..." />
+        <button id="browseSettingsFileDir" type="button">Browse</button>
+        <button id="resetSettingsFileDir" type="button">Reset</button>
+      </div>
+      <p class="current-location-readout">File: <code id="settingsFilePath">Loading...</code></p>
+    </div>
     <div class="settings-actions">
-      <button id="saveShortcut" type="button">Save</button>
-      <button id="clearShortcut" type="button">Clear</button>
       <button id="resetSettings" type="button">Reset Defaults</button>
-      <button id="closeSettings" type="button">Close</button>
     </div>
   </div>
 

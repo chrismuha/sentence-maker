@@ -5,8 +5,6 @@ const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
 const backdrop = document.getElementById("backdrop");
 const shortcutInput = document.getElementById("shortcutInput");
-const saveShortcut = document.getElementById("saveShortcut");
-const clearShortcut = document.getElementById("clearShortcut");
 const resetSettings = document.getElementById("resetSettings");
 const closeSettings = document.getElementById("closeSettings");
 const shortcutHint = document.getElementById("shortcutHint");
@@ -16,18 +14,17 @@ const alphabeticalSortSetting = document.getElementById("alphabeticalSortSetting
 const preservePasteFormattingSetting = document.getElementById("preservePasteFormattingSetting");
 const endingSettings = Array.from(document.querySelectorAll("[data-ending-character]"));
 const customEndingInput = document.getElementById("customEndingInput");
+const settingsFileDir = document.getElementById("settingsFileDir");
+const settingsFilePath = document.getElementById("settingsFilePath");
+const browseSettingsFileDir = document.getElementById("browseSettingsFileDir");
+const resetSettingsFileDir = document.getElementById("resetSettingsFileDir");
 
 let shortcutKey = null; // normalized (lowercase) key name
-let pendingShortcut = null;
 let insertBlankLines = true;
-let pendingInsertBlankLines = true;
 let sortAlphabetically = false;
-let pendingSortAlphabetically = false;
 let preservePasteFormatting = true;
-let pendingPreservePasteFormatting = true;
 const DEFAULT_SENTENCE_ENDING_CHARACTERS = [".", ";", "?", "!", ":", "\""];
 let sentenceEndingCharacters = [...DEFAULT_SENTENCE_ENDING_CHARACTERS];
-let pendingSentenceEndingCharacters = [...sentenceEndingCharacters];
 const pressedKeys = new Set();
 let notAllowedTimeout = null;
 let breakConfirmationTimeout = null;
@@ -78,23 +75,17 @@ clearTextBtn.addEventListener("click", clearEditorText);
 settingsBtn.addEventListener("click", openSettings);
 closeSettings.addEventListener("click", hideSettings);
 backdrop.addEventListener("click", hideSettings);
-saveShortcut.addEventListener("click", () => {
-  applySettings(pendingShortcut, pendingInsertBlankLines, pendingSortAlphabetically, pendingPreservePasteFormatting);
-  hideSettings();
-});
-clearShortcut.addEventListener("click", () => {
-  pendingShortcut = null;
-  shortcutInput.value = "";
-});
 resetSettings.addEventListener("click", resetPendingSettingsToDefaults);
+browseSettingsFileDir.addEventListener("click", browseSettingsLocation);
+resetSettingsFileDir.addEventListener("click", resetSettingsLocation);
 blankLineSetting.addEventListener("change", event => {
-  pendingInsertBlankLines = Boolean(event.target.checked);
+  applySettings({ insertBlankLines: Boolean(event.target.checked) });
 });
 alphabeticalSortSetting.addEventListener("change", event => {
-  pendingSortAlphabetically = Boolean(event.target.checked);
+  applySettings({ sortAlphabetically: Boolean(event.target.checked) });
 });
 preservePasteFormattingSetting.addEventListener("change", event => {
-  pendingPreservePasteFormatting = Boolean(event.target.checked);
+  applySettings({ preservePasteFormatting: Boolean(event.target.checked) });
 });
 endingSettings.forEach(input => {
   input.addEventListener("change", updatePendingSentenceEndings);
@@ -380,10 +371,12 @@ function getCustomSentenceEndingsFromInput() {
 }
 
 function updatePendingSentenceEndings() {
-  pendingSentenceEndingCharacters = [
-    ...endingSettings.filter(input => input.checked).map(input => input.dataset.endingCharacter),
-    ...getCustomSentenceEndingsFromInput()
-  ];
+  applySettings({
+    sentenceEndingCharacters: [
+      ...endingSettings.filter(input => input.checked).map(input => input.dataset.endingCharacter),
+      ...getCustomSentenceEndingsFromInput()
+    ]
+  });
 }
 
 function syncSentenceEndingControls(characters) {
@@ -401,29 +394,29 @@ function formatSentenceEndings(characters) {
 }
 
 function resetPendingSettingsToDefaults() {
-  pendingShortcut = null;
-  pendingInsertBlankLines = true;
-  pendingSortAlphabetically = false;
-  pendingPreservePasteFormatting = true;
-  pendingSentenceEndingCharacters = [...DEFAULT_SENTENCE_ENDING_CHARACTERS];
+  applySettings({
+    shortcutKey: null,
+    insertBlankLines: true,
+    sortAlphabetically: false,
+    preservePasteFormatting: true,
+    sentenceEndingCharacters: [...DEFAULT_SENTENCE_ENDING_CHARACTERS]
+  });
   shortcutInput.value = "";
-  blankLineSetting.checked = pendingInsertBlankLines;
-  alphabeticalSortSetting.checked = pendingSortAlphabetically;
-  preservePasteFormattingSetting.checked = pendingPreservePasteFormatting;
-  syncSentenceEndingControls(pendingSentenceEndingCharacters);
+  blankLineSetting.checked = insertBlankLines;
+  alphabeticalSortSetting.checked = sortAlphabetically;
+  preservePasteFormattingSetting.checked = preservePasteFormatting;
+  syncSentenceEndingControls(sentenceEndingCharacters);
 }
 
 function openSettings() {
-  pendingShortcut = shortcutKey;
-  pendingInsertBlankLines = insertBlankLines;
-  pendingSortAlphabetically = sortAlphabetically;
-  pendingPreservePasteFormatting = preservePasteFormatting;
-  pendingSentenceEndingCharacters = [...sentenceEndingCharacters];
-  shortcutInput.value = pendingShortcut ? formatKey(pendingShortcut) : "";
-  blankLineSetting.checked = pendingInsertBlankLines;
-  alphabeticalSortSetting.checked = pendingSortAlphabetically;
-  preservePasteFormattingSetting.checked = pendingPreservePasteFormatting;
-  syncSentenceEndingControls(pendingSentenceEndingCharacters);
+  shortcutInput.value = shortcutKey ? formatKey(shortcutKey) : "";
+  blankLineSetting.checked = insertBlankLines;
+  alphabeticalSortSetting.checked = sortAlphabetically;
+  preservePasteFormattingSetting.checked = preservePasteFormatting;
+  syncSentenceEndingControls(sentenceEndingCharacters);
+  refreshSettingsLocation().catch(() => {
+    updateSettingsLocationReadout();
+  });
   pressedKeys.clear();
   settingsPanel.classList.remove("hidden");
   backdrop.classList.remove("hidden");
@@ -436,16 +429,64 @@ function hideSettings() {
   backdrop.classList.add("hidden");
 }
 
-function applySettings(normalizedKey, useBlankLines, useAlphabeticalSort, usePasteFormatting, selectedSentenceEndings = pendingSentenceEndingCharacters) {
-  shortcutKey = normalizedKey || null;
-  insertBlankLines = Boolean(useBlankLines);
-  sortAlphabetically = Boolean(useAlphabeticalSort);
-  preservePasteFormatting = Boolean(usePasteFormatting);
-  sentenceEndingCharacters = normalizeSentenceEndings(selectedSentenceEndings);
+function applySettings(nextSettings = {}) {
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "shortcutKey")) {
+    shortcutKey = nextSettings.shortcutKey || null;
+  }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "insertBlankLines")) {
+    insertBlankLines = Boolean(nextSettings.insertBlankLines);
+  }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "sortAlphabetically")) {
+    sortAlphabetically = Boolean(nextSettings.sortAlphabetically);
+  }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "preservePasteFormatting")) {
+    preservePasteFormatting = Boolean(nextSettings.preservePasteFormatting);
+  }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "sentenceEndingCharacters")) {
+    sentenceEndingCharacters = normalizeSentenceEndings(nextSettings.sentenceEndingCharacters);
+  }
   saveSettings().catch(() => {
     // Ignore persistence errors; the app can still run in-memory.
   });
   updateHint();
+}
+
+function updateSettingsLocationReadout(status = {}) {
+  if (settingsFileDir) {
+    settingsFileDir.value = status.settingsDir || "Unavailable";
+  }
+  if (settingsFilePath) {
+    settingsFilePath.textContent = status.settingsPath || "Unavailable";
+  }
+}
+
+async function refreshSettingsLocation() {
+  if (!window.sentenceMakerSettings?.getFileStatus) {
+    updateSettingsLocationReadout();
+    return;
+  }
+
+  updateSettingsLocationReadout(await window.sentenceMakerSettings.getFileStatus());
+}
+
+async function browseSettingsLocation() {
+  if (!window.sentenceMakerSettings?.setFileDir) return;
+
+  const status = await window.sentenceMakerSettings.setFileDir();
+  if (status) {
+    updateSettingsLocationReadout(status);
+    await loadSettings();
+    openSettings();
+  }
+}
+
+async function resetSettingsLocation() {
+  if (!window.sentenceMakerSettings?.resetFileDir) return;
+
+  const status = await window.sentenceMakerSettings.resetFileDir();
+  updateSettingsLocationReadout(status);
+  await loadSettings();
+  openSettings();
 }
 
 function captureShortcut(event) {
@@ -453,11 +494,11 @@ function captureShortcut(event) {
   const normalized = normalizeKeyEvent(event, { pressedKeys });
 
   if (!normalized || normalized === "__pending_combo__" || normalized === "__modifier_only__") {
-    const previous = pendingShortcut;
+    const previous = shortcutKey;
     clearTimeout(notAllowedTimeout);
     shortcutInput.value = "Not allowed";
     notAllowedTimeout = setTimeout(() => {
-      if (pendingShortcut === previous) {
+      if (shortcutKey === previous) {
         shortcutInput.value = previous ? formatKey(previous) : "";
       }
     }, 800);
@@ -465,8 +506,8 @@ function captureShortcut(event) {
   }
 
   clearTimeout(notAllowedTimeout);
-  pendingShortcut = normalized;
-  shortcutInput.value = formatKey(pendingShortcut);
+  applySettings({ shortcutKey: normalized });
+  shortcutInput.value = formatKey(shortcutKey);
   pressedKeys.clear();
 }
 
@@ -658,19 +699,15 @@ async function loadSettings() {
     }
     if (typeof parsed.insertBlankLines === "boolean") {
       insertBlankLines = parsed.insertBlankLines;
-      pendingInsertBlankLines = parsed.insertBlankLines;
     }
     if (typeof parsed.sortAlphabetically === "boolean") {
       sortAlphabetically = parsed.sortAlphabetically;
-      pendingSortAlphabetically = parsed.sortAlphabetically;
     }
     if (typeof parsed.preservePasteFormatting === "boolean") {
       preservePasteFormatting = parsed.preservePasteFormatting;
-      pendingPreservePasteFormatting = parsed.preservePasteFormatting;
     }
     if (Array.isArray(parsed.sentenceEndingCharacters)) {
       sentenceEndingCharacters = normalizeSentenceEndings(parsed.sentenceEndingCharacters);
-      pendingSentenceEndingCharacters = [...sentenceEndingCharacters];
     }
   } catch {
     // Ignore malformed or unavailable saved settings.

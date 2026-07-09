@@ -14,4 +14,5 @@ Simple desktop app that breaks text into individual sentences.
 
 ## Settings file
 - The app includes a default [`settings.json`](./settings.json).
-- On launch, Sentence Maker creates and uses a writable `settings.json` in Electron's user-data folder and saves your shortcut and blank-line preference there.
+- On launch, Sentence Maker creates and uses a writable `settings.json` on the Desktop by default, matching Profit Pulse's settings-file behavior.
+- Electron's user-data folder stores `settings-location.json`, which remembers the folder that contains the writable `settings.json`.

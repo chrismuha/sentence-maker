@@ -171,20 +171,77 @@ button:focus-visible {
   color: var(--text);
 }
 
+.settings-location {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-location h3 {
+  margin: 0 0 8px;
+  font-size: 11pt;
+}
+
+.settings-location label {
+  display: block;
+  font-size: 10pt;
+  color: var(--text);
+}
+
+.settings-location-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.current-location-readout {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 9.5pt;
+  line-height: 1.45;
+}
+
+.current-location-readout code {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
 .settings {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  width: min(92vw, 420px);
-  max-height: min(88vh, 680px);
+  border: 0;
+  border-radius: 0;
+  padding: clamp(16px, 4vw, 36px);
+  width: 100vw;
+  max-height: none;
+  box-sizing: border-box;
   overflow-y: auto;
-  box-shadow: var(--shadow);
+  box-shadow: none;
   z-index: 2;
+}
+
+.settings > * {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.settings-close {
+  position: sticky;
+  top: 0;
+  display: block;
+  max-width: none;
+  margin-right: 0;
+  margin-left: auto;
+  z-index: 3;
+  background: var(--surface);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.settings-close:hover {
+  background: #f0f4fb;
 }
 
 .settings input {
@@ -223,8 +280,21 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 24px;
+  padding-bottom: 8px;
+}
+
+.settings-actions button {
+  min-width: 104px;
+}
+
+#resetSettings {
+  background: transparent;
+}
+
+#resetSettings:hover {
+  background: #f0f4fb;
 }
 
 .backdrop {
@@ -274,29 +344,30 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .settings-location-row {
+    grid-template-columns: 1fr;
+  }
+
   .hint {
     font-size: 10.5pt;
     line-height: 1.45;
   }
 
   .settings {
-    top: auto;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    transform: none;
-    width: auto;
-    max-height: 80vh;
-    border-radius: 12px;
+    inset: 0;
+    width: 100vw;
+    max-height: none;
+    border-radius: 0;
     padding: 14px;
   }
 
   .settings-actions {
-    justify-content: stretch;
+    justify-content: flex-start;
   }
 
   .settings-actions button {
-    flex: 1 1 100%;
+    flex: 1 1 calc(50% - 8px);
+    min-width: 0;
   }
 }
 

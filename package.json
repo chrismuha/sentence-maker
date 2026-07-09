@@ -74,6 +74,7 @@
       "assets/**",
       "index.html",
       "preload.js",
+      "settings.json",
       "startup-mode.cjs",
       "package.json"
     ],

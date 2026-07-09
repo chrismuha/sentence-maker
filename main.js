@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, nativeImage } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, nativeImage } = require("electron");
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-gpu-compositing');
@@ -20,6 +20,9 @@ try {
 const { loadRenderer } = require("./startup-mode.cjs");
 const APP_NAME = "Sentence Maker";
 const APP_ID = "com.muha.sentencemaker";
+const SETTINGS_LOCATION_PATH = path.join(app.getPath("userData"), "settings-location.json");
+const DEFAULT_SETTINGS_DIR = app.getPath("desktop");
+const DEFAULT_SETTINGS_PATH = path.join(DEFAULT_SETTINGS_DIR, "settings.json");
 
 function applyAppIdentity() {
   app.setName(APP_NAME);
@@ -71,8 +74,58 @@ function getBundledSettingsPath() {
   return path.join(__dirname, "settings.json");
 }
 
-function getUserSettingsPath() {
+function getLegacyUserSettingsPath() {
   return path.join(app.getPath("userData"), "settings.json");
+}
+
+function ensureDir(dir) {
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+  } catch {
+    // Directory creation failures are handled by the caller's file operation.
+  }
+}
+
+function readSettingsLocation() {
+  try {
+    if (!fs.existsSync(SETTINGS_LOCATION_PATH)) {
+      return { settingsDir: DEFAULT_SETTINGS_DIR };
+    }
+
+    const parsed = JSON.parse(fs.readFileSync(SETTINGS_LOCATION_PATH, "utf8"));
+    const settingsDir = String(parsed?.settingsDir || "").trim() || DEFAULT_SETTINGS_DIR;
+    return { settingsDir };
+  } catch {
+    return { settingsDir: DEFAULT_SETTINGS_DIR };
+  }
+}
+
+function writeSettingsLocation(settingsDir) {
+  const nextDir = String(settingsDir || "").trim() || DEFAULT_SETTINGS_DIR;
+  ensureDir(app.getPath("userData"));
+  fs.writeFileSync(SETTINGS_LOCATION_PATH, JSON.stringify({ settingsDir: nextDir }, null, 2));
+}
+
+function getSettingsDir() {
+  const location = readSettingsLocation();
+  return String(location.settingsDir || DEFAULT_SETTINGS_DIR).trim() || DEFAULT_SETTINGS_DIR;
+}
+
+function getSettingsPath() {
+  return path.join(getSettingsDir(), "settings.json");
+}
+
+function getSettingsFileStatus() {
+  const settingsDir = getSettingsDir();
+  const settingsPath = getSettingsPath();
+  const isDefault = settingsDir === DEFAULT_SETTINGS_DIR;
+  return {
+    settingsDir,
+    settingsPath,
+    defaultDir: DEFAULT_SETTINGS_DIR,
+    defaultPath: DEFAULT_SETTINGS_PATH,
+    isDefault
+  };
 }
 
 function getDefaultSettings() {
@@ -102,19 +155,24 @@ function normalizeSentenceEndings(value, fallbackValue) {
 }
 
 function ensureSettingsFile() {
-  const settingsPath = getUserSettingsPath();
+  const settingsPath = getSettingsPath();
+  const legacySettingsPath = getLegacyUserSettingsPath();
   const defaultSettings = getDefaultSettings();
 
   try {
     if (!fs.existsSync(settingsPath)) {
-      fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
-      fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
-      return defaultSettings;
+      ensureDir(path.dirname(settingsPath));
+
+      if (settingsPath !== legacySettingsPath && fs.existsSync(legacySettingsPath)) {
+        fs.copyFileSync(legacySettingsPath, settingsPath);
+      } else {
+        fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
+      }
     }
 
     const raw = fs.readFileSync(settingsPath, "utf8");
     const parsed = JSON.parse(raw);
-    return {
+    const normalized = {
       shortcutKey: typeof parsed.shortcutKey === "string" ? parsed.shortcutKey : null,
       insertBlankLines: typeof parsed.insertBlankLines === "boolean"
         ? parsed.insertBlankLines
@@ -130,13 +188,25 @@ function ensureSettingsFile() {
         defaultSettings.sentenceEndingCharacters
       )
     };
+
+    if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+      fs.writeFileSync(settingsPath, JSON.stringify(normalized, null, 2));
+    }
+
+    return normalized;
   } catch {
+    try {
+      ensureDir(path.dirname(settingsPath));
+      fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
+    } catch {
+      // If the selected folder is unavailable, keep the app usable with defaults.
+    }
     return defaultSettings;
   }
 }
 
 function saveSettings(nextSettings) {
-  const settingsPath = getUserSettingsPath();
+  const settingsPath = getSettingsPath();
   const defaultSettings = getDefaultSettings();
   const normalized = {
     shortcutKey: typeof nextSettings?.shortcutKey === "string" ? nextSettings.shortcutKey : null,
@@ -155,9 +225,52 @@ function saveSettings(nextSettings) {
     )
   };
 
-  fs.mkdirSync(path.dirname(settingsPath), { recursive: true });
+  ensureDir(path.dirname(settingsPath));
   fs.writeFileSync(settingsPath, JSON.stringify(normalized, null, 2));
   return normalized;
+}
+
+async function setSettingsFileDir(event) {
+  const currentStatus = getSettingsFileStatus();
+  const parentWindow = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(parentWindow, {
+    title: "SELECT SETTINGS FILE FOLDER",
+    defaultPath: currentStatus.settingsDir || currentStatus.defaultDir,
+    properties: ["openDirectory", "createDirectory"]
+  });
+
+  if (result.canceled || !result.filePaths.length) {
+    return null;
+  }
+
+  const nextDir = result.filePaths[0];
+  ensureDir(nextDir);
+
+  const currentPath = currentStatus.settingsPath;
+  const nextPath = path.join(nextDir, "settings.json");
+  if (currentPath !== nextPath && fs.existsSync(currentPath) && !fs.existsSync(nextPath)) {
+    fs.copyFileSync(currentPath, nextPath);
+  }
+
+  writeSettingsLocation(nextDir);
+  saveSettings(ensureSettingsFile());
+  return getSettingsFileStatus();
+}
+
+function resetSettingsFileDir() {
+  const currentStatus = getSettingsFileStatus();
+  const nextDir = DEFAULT_SETTINGS_DIR;
+  ensureDir(nextDir);
+
+  const currentPath = currentStatus.settingsPath;
+  const nextPath = DEFAULT_SETTINGS_PATH;
+  if (currentPath !== nextPath && fs.existsSync(currentPath) && !fs.existsSync(nextPath)) {
+    fs.copyFileSync(currentPath, nextPath);
+  }
+
+  writeSettingsLocation(nextDir);
+  saveSettings(ensureSettingsFile());
+  return getSettingsFileStatus();
 }
 
 function createWindow() {
@@ -205,7 +318,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle("settings:load", () => ensureSettingsFile());
   ipcMain.handle("settings:save", (_event, nextSettings) => saveSettings(nextSettings));
-  ipcMain.handle("settings:path", () => getUserSettingsPath());
+  ipcMain.handle("settings:path", () => getSettingsPath());
+  ipcMain.handle("settings:file-status", () => getSettingsFileStatus());
+  ipcMain.handle("settings:set-file-dir", (event) => setSettingsFileDir(event));
+  ipcMain.handle("settings:reset-file-dir", () => resetSettingsFileDir());
 
   createWindow();
 
