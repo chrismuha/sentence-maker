@@ -96,4 +96,8 @@ release/
 
 dist/
 
+# Generated app icon intermediates
+assets/icons/icon.iconset/
+assets/icons/ico-pngs/
+
 package-lock.json
