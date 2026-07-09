@@ -3,6 +3,12 @@
   "insertBlankLines": true,
   "sortAlphabetically": false,
   "preservePasteFormatting": true,
+  "closeInfoPopoverOnOutsideClick": true,
+  "tooltipEnabled": true,
+  "tooltipHoverEnabled": false,
+  "tooltipInstant": true,
+  "tooltipPinOnClick": false,
+  "tooltipDelayMs": 500,
   "sentenceEndingCharacters": [
     ".",
     ";",

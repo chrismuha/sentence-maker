@@ -4,6 +4,7 @@ const clearTextBtn = document.getElementById("clearTextBtn");
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsPanel = document.getElementById("settingsPanel");
 const backdrop = document.getElementById("backdrop");
+const appVersion = document.getElementById("appVersion");
 const shortcutInput = document.getElementById("shortcutInput");
 const resetSettings = document.getElementById("resetSettings");
 const closeSettings = document.getElementById("closeSettings");
@@ -18,20 +19,99 @@ const settingsFileDir = document.getElementById("settingsFileDir");
 const settingsFilePath = document.getElementById("settingsFilePath");
 const browseSettingsFileDir = document.getElementById("browseSettingsFileDir");
 const resetSettingsFileDir = document.getElementById("resetSettingsFileDir");
+const tooltipEnabledSetting = document.getElementById("tooltipEnabledSetting");
+const tooltipHoverEnabledSetting = document.getElementById("tooltipHoverEnabledSetting");
+const tooltipInstantSetting = document.getElementById("tooltipInstantSetting");
+const tooltipPinOnClickSetting = document.getElementById("tooltipPinOnClickSetting");
+const closeInfoPopoverOnOutsideClickSetting = document.getElementById("closeInfoPopoverOnOutsideClickSetting");
+const tooltipDelaySetting = document.getElementById("tooltipDelaySetting");
+const infoOverlay = document.getElementById("infoOverlay");
+const infoOverlayTitle = document.getElementById("infoOverlayTitle");
+const infoOverlayText = document.getElementById("infoOverlayText");
+const closeInfoOverlay = document.getElementById("closeInfoOverlay");
+const infoButtons = Array.from(document.querySelectorAll("[data-info-key]"));
 
 let shortcutKey = null; // normalized (lowercase) key name
 let insertBlankLines = true;
 let sortAlphabetically = false;
 let preservePasteFormatting = true;
+let closeInfoPopoverOnOutsideClick = true;
+let tooltipEnabled = true;
+let tooltipHoverEnabled = false;
+let tooltipInstant = true;
+let tooltipPinOnClick = false;
+let tooltipDelayMs = 500;
 const DEFAULT_SENTENCE_ENDING_CHARACTERS = [".", ";", "?", "!", ":", "\""];
 let sentenceEndingCharacters = [...DEFAULT_SENTENCE_ENDING_CHARACTERS];
 const pressedKeys = new Set();
 let notAllowedTimeout = null;
 let breakConfirmationTimeout = null;
+let infoHoverTimeout = null;
+let infoDismissTimeout = null;
 let failedSentenceBeingEdited = null;
 const BREAK_CONFIRMATION_MS = 5000;
 const CLOSING_SENTENCE_WRAPPERS = new Set([")", "]", "}", "\"", "'", "”", "’", "»"]);
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
+const SETTING_HELP = {
+  shortcutKey: {
+    title: "Trigger key",
+    text: "Sets the keyboard shortcut that runs Break without clicking the button."
+  },
+  insertBlankLines: {
+    title: "Insert blank lines",
+    text: "Adds an empty line between each broken sentence in the output."
+  },
+  preservePasteFormatting: {
+    title: "Preserve paste formatting",
+    text: "Keeps rich formatting when you paste text into the editor. Turn this off to paste plain text."
+  },
+  sortAlphabetically: {
+    title: "Sort alphabetically",
+    text: "Sorts the broken sentences A to Z after splitting them."
+  },
+  periodEnding: { title: "Period", text: "Treats periods as sentence-ending punctuation." },
+  questionEnding: { title: "Question mark", text: "Treats question marks as sentence-ending punctuation." },
+  exclamationEnding: { title: "Exclamation mark", text: "Treats exclamation marks as sentence-ending punctuation." },
+  colonEnding: { title: "Colon", text: "Treats colons as sentence-ending punctuation." },
+  semicolonEnding: { title: "Semicolon", text: "Treats semicolons as sentence-ending punctuation." },
+  quoteEnding: { title: "Quote", text: "Treats quote marks as sentence-ending punctuation." },
+  customEndings: {
+    title: "Custom characters",
+    text: "Adds your own sentence-ending characters. Type each character once, such as | or /."
+  },
+  tooltipEnabled: {
+    title: "Enable information tips",
+    text: "Turns these information overlays on or off across the app."
+  },
+  tooltipHoverEnabled: {
+    title: "Show information on hover",
+    text: "Allows information overlays to appear from hover or focus. The info buttons can still be clicked."
+  },
+  tooltipInstant: {
+    title: "Show instantly",
+    text: "Shows hover information immediately instead of waiting for the tooltip delay."
+  },
+  tooltipPinOnClick: {
+    title: "Show information on click",
+    text: "Keeps clicked information open until you close it or click away."
+  },
+  closeInfoPopoverOnOutsideClick: {
+    title: "Outside click closes info",
+    text: "Closes open information overlays when you click outside them."
+  },
+  tooltipDelayMs: {
+    title: "Tooltip delay",
+    text: "Sets how long hover information waits before opening. This uses seconds and saves in half-second steps."
+  },
+  settingsFileDir: {
+    title: "Saved settings location",
+    text: "Sets the folder where Sentence Maker saves settings.json. A small pointer in app data remembers this folder."
+  },
+  resetSettings: {
+    title: "Reset defaults",
+    text: "Restores Sentence Maker preferences to their built-in defaults and saves them immediately."
+  }
+};
 
 function getFocusableElements() {
   return Array.from(document.querySelectorAll(FOCUSABLE_SELECTOR)).filter(element => {
@@ -46,6 +126,11 @@ function handleTabAndEscapeFocus(event) {
   if (event.defaultPrevented) return;
 
   if (event.key === "Escape") {
+    if (!infoOverlay.classList.contains("hidden")) {
+      closeInfoTip();
+      return;
+    }
+
     const active = document.activeElement;
     if (active && active !== document.body && active !== document.documentElement && typeof active.blur === "function") {
       active.blur();
@@ -78,6 +163,12 @@ backdrop.addEventListener("click", hideSettings);
 resetSettings.addEventListener("click", resetPendingSettingsToDefaults);
 browseSettingsFileDir.addEventListener("click", browseSettingsLocation);
 resetSettingsFileDir.addEventListener("click", resetSettingsLocation);
+closeInfoOverlay.addEventListener("click", closeInfoTip);
+infoOverlay.addEventListener("click", event => {
+  if (event.target === infoOverlay && closeInfoPopoverOnOutsideClick !== false) {
+    closeInfoTip();
+  }
+});
 blankLineSetting.addEventListener("change", event => {
   applySettings({ insertBlankLines: Boolean(event.target.checked) });
 });
@@ -91,6 +182,47 @@ endingSettings.forEach(input => {
   input.addEventListener("change", updatePendingSentenceEndings);
 });
 customEndingInput.addEventListener("input", updatePendingSentenceEndings);
+tooltipEnabledSetting.addEventListener("change", event => {
+  applySettings({ tooltipEnabled: Boolean(event.target.checked) });
+  syncTooltipControls();
+  if (!tooltipEnabled) closeInfoTip();
+});
+tooltipHoverEnabledSetting.addEventListener("change", event => {
+  applySettings({ tooltipHoverEnabled: Boolean(event.target.checked) });
+  syncTooltipControls();
+});
+tooltipInstantSetting.addEventListener("change", event => {
+  applySettings({
+    tooltipInstant: Boolean(event.target.checked),
+    tooltipDelayMs: event.target.checked ? 0 : Math.max(tooltipDelayMs, 500)
+  });
+  syncTooltipControls();
+});
+tooltipPinOnClickSetting.addEventListener("change", event => {
+  applySettings({ tooltipPinOnClick: Boolean(event.target.checked) });
+});
+closeInfoPopoverOnOutsideClickSetting.addEventListener("change", event => {
+  applySettings({ closeInfoPopoverOnOutsideClick: Boolean(event.target.checked) });
+});
+tooltipDelaySetting.addEventListener("input", event => {
+  const nextDelaySeconds = Number(event.target.value);
+  applySettings({
+    tooltipDelayMs: normalizeTooltipDelayMs(nextDelaySeconds * 1000),
+    tooltipInstant: nextDelaySeconds <= 0
+  });
+  syncTooltipControls();
+});
+infoButtons.forEach(button => {
+  button.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    showInfoTip(button.dataset.infoKey, { pinned: tooltipPinOnClick });
+  });
+  button.addEventListener("mouseenter", () => scheduleHoverInfoTip(button));
+  button.addEventListener("mouseleave", clearHoverInfoTip);
+  button.addEventListener("focus", () => scheduleHoverInfoTip(button));
+  button.addEventListener("blur", clearHoverInfoTip);
+});
 shortcutInput.addEventListener("keydown", event => {
   // Reset if we hit a fresh modifier chord to avoid stale keys
   if (event.metaKey || event.altKey || event.ctrlKey) {
@@ -122,6 +254,12 @@ document.addEventListener("keydown", event => {
 
 document.addEventListener("keyup", event => {
   pressedKeys.delete((event.key || "").toLowerCase());
+});
+document.addEventListener("click", event => {
+  if (infoOverlay.classList.contains("hidden")) return;
+  if (closeInfoPopoverOnOutsideClick === false) return;
+  if (event.target.closest(".info-card") || event.target.closest("[data-info-key]")) return;
+  closeInfoTip();
 });
 window.addEventListener("blur", () => pressedKeys.clear());
 editor.addEventListener("beforeinput", event => {
@@ -399,6 +537,12 @@ function resetPendingSettingsToDefaults() {
     insertBlankLines: true,
     sortAlphabetically: false,
     preservePasteFormatting: true,
+    closeInfoPopoverOnOutsideClick: true,
+    tooltipEnabled: true,
+    tooltipHoverEnabled: false,
+    tooltipInstant: true,
+    tooltipPinOnClick: false,
+    tooltipDelayMs: 500,
     sentenceEndingCharacters: [...DEFAULT_SENTENCE_ENDING_CHARACTERS]
   });
   shortcutInput.value = "";
@@ -406,6 +550,7 @@ function resetPendingSettingsToDefaults() {
   alphabeticalSortSetting.checked = sortAlphabetically;
   preservePasteFormattingSetting.checked = preservePasteFormatting;
   syncSentenceEndingControls(sentenceEndingCharacters);
+  syncTooltipControls();
 }
 
 function openSettings() {
@@ -414,6 +559,7 @@ function openSettings() {
   alphabeticalSortSetting.checked = sortAlphabetically;
   preservePasteFormattingSetting.checked = preservePasteFormatting;
   syncSentenceEndingControls(sentenceEndingCharacters);
+  syncTooltipControls();
   refreshSettingsLocation().catch(() => {
     updateSettingsLocationReadout();
   });
@@ -442,6 +588,24 @@ function applySettings(nextSettings = {}) {
   if (Object.prototype.hasOwnProperty.call(nextSettings, "preservePasteFormatting")) {
     preservePasteFormatting = Boolean(nextSettings.preservePasteFormatting);
   }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "closeInfoPopoverOnOutsideClick")) {
+    closeInfoPopoverOnOutsideClick = Boolean(nextSettings.closeInfoPopoverOnOutsideClick);
+  }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "tooltipEnabled")) {
+    tooltipEnabled = Boolean(nextSettings.tooltipEnabled);
+  }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "tooltipHoverEnabled")) {
+    tooltipHoverEnabled = Boolean(nextSettings.tooltipHoverEnabled);
+  }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "tooltipInstant")) {
+    tooltipInstant = Boolean(nextSettings.tooltipInstant);
+  }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "tooltipPinOnClick")) {
+    tooltipPinOnClick = Boolean(nextSettings.tooltipPinOnClick);
+  }
+  if (Object.prototype.hasOwnProperty.call(nextSettings, "tooltipDelayMs")) {
+    tooltipDelayMs = normalizeTooltipDelayMs(nextSettings.tooltipDelayMs);
+  }
   if (Object.prototype.hasOwnProperty.call(nextSettings, "sentenceEndingCharacters")) {
     sentenceEndingCharacters = normalizeSentenceEndings(nextSettings.sentenceEndingCharacters);
   }
@@ -449,6 +613,73 @@ function applySettings(nextSettings = {}) {
     // Ignore persistence errors; the app can still run in-memory.
   });
   updateHint();
+}
+
+function normalizeTooltipDelayMs(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) return 500;
+  return Math.round(parsed / 500) * 500;
+}
+
+function syncTooltipControls() {
+  tooltipEnabledSetting.checked = tooltipEnabled;
+  tooltipHoverEnabledSetting.checked = tooltipHoverEnabled;
+  tooltipInstantSetting.checked = tooltipInstant;
+  tooltipPinOnClickSetting.checked = tooltipPinOnClick;
+  closeInfoPopoverOnOutsideClickSetting.checked = closeInfoPopoverOnOutsideClick;
+  tooltipDelaySetting.value = String((tooltipInstant ? 0 : tooltipDelayMs) / 1000);
+  tooltipDelaySetting.disabled = tooltipInstant || !tooltipEnabled;
+  tooltipHoverEnabledSetting.disabled = !tooltipEnabled;
+  tooltipInstantSetting.disabled = !tooltipEnabled;
+  tooltipPinOnClickSetting.disabled = !tooltipEnabled;
+  closeInfoPopoverOnOutsideClickSetting.disabled = !tooltipEnabled;
+  infoButtons.forEach(button => {
+    button.disabled = !tooltipEnabled && button.dataset.infoKey !== "tooltipEnabled";
+  });
+}
+
+function clearInfoTimers() {
+  clearTimeout(infoHoverTimeout);
+  clearTimeout(infoDismissTimeout);
+  infoHoverTimeout = null;
+  infoDismissTimeout = null;
+}
+
+function showInfoTip(key, { pinned = false } = {}) {
+  if (!tooltipEnabled && key !== "tooltipEnabled") return;
+
+  const help = SETTING_HELP[key];
+  if (!help) return;
+
+  clearInfoTimers();
+  infoOverlayTitle.textContent = help.title;
+  infoOverlayText.textContent = help.text;
+  infoOverlay.classList.remove("hidden");
+
+  if (!pinned && closeInfoPopoverOnOutsideClick !== false) {
+    const delay = tooltipInstant ? 2500 : Math.max(tooltipDelayMs, 500);
+    infoDismissTimeout = setTimeout(closeInfoTip, delay);
+  }
+}
+
+function closeInfoTip() {
+  clearInfoTimers();
+  infoOverlay.classList.add("hidden");
+}
+
+function scheduleHoverInfoTip(button) {
+  if (!tooltipEnabled || !tooltipHoverEnabled) return;
+
+  clearHoverInfoTip();
+  const delay = tooltipInstant ? 0 : tooltipDelayMs;
+  infoHoverTimeout = setTimeout(() => {
+    showInfoTip(button.dataset.infoKey, { pinned: false });
+  }, delay);
+}
+
+function clearHoverInfoTip() {
+  clearTimeout(infoHoverTimeout);
+  infoHoverTimeout = null;
 }
 
 function updateSettingsLocationReadout(status = {}) {
@@ -487,6 +718,16 @@ async function resetSettingsLocation() {
   updateSettingsLocationReadout(status);
   await loadSettings();
   openSettings();
+}
+
+async function loadAppVersion() {
+  try {
+    if (!window.sentenceMakerSettings?.getAppVersion) return;
+    const version = await window.sentenceMakerSettings.getAppVersion();
+    appVersion.textContent = version || "Unavailable";
+  } catch {
+    appVersion.textContent = "Unavailable";
+  }
 }
 
 function captureShortcut(event) {
@@ -685,6 +926,12 @@ async function saveSettings() {
     insertBlankLines,
     sortAlphabetically,
     preservePasteFormatting,
+    closeInfoPopoverOnOutsideClick,
+    tooltipEnabled,
+    tooltipHoverEnabled,
+    tooltipInstant,
+    tooltipPinOnClick,
+    tooltipDelayMs,
     sentenceEndingCharacters
   });
 }
@@ -706,6 +953,24 @@ async function loadSettings() {
     if (typeof parsed.preservePasteFormatting === "boolean") {
       preservePasteFormatting = parsed.preservePasteFormatting;
     }
+    if (typeof parsed.closeInfoPopoverOnOutsideClick === "boolean") {
+      closeInfoPopoverOnOutsideClick = parsed.closeInfoPopoverOnOutsideClick;
+    }
+    if (typeof parsed.tooltipEnabled === "boolean") {
+      tooltipEnabled = parsed.tooltipEnabled;
+    }
+    if (typeof parsed.tooltipHoverEnabled === "boolean") {
+      tooltipHoverEnabled = parsed.tooltipHoverEnabled;
+    }
+    if (typeof parsed.tooltipInstant === "boolean") {
+      tooltipInstant = parsed.tooltipInstant;
+    }
+    if (typeof parsed.tooltipPinOnClick === "boolean") {
+      tooltipPinOnClick = parsed.tooltipPinOnClick;
+    }
+    if (Number.isFinite(Number(parsed.tooltipDelayMs))) {
+      tooltipDelayMs = normalizeTooltipDelayMs(parsed.tooltipDelayMs);
+    }
     if (Array.isArray(parsed.sentenceEndingCharacters)) {
       sentenceEndingCharacters = normalizeSentenceEndings(parsed.sentenceEndingCharacters);
     }
@@ -715,5 +980,7 @@ async function loadSettings() {
 }
 
 loadSettings().finally(() => {
+  syncTooltipControls();
   updateHint();
 });
+loadAppVersion();

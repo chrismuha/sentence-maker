@@ -22,71 +22,151 @@
 
   <div id="backdrop" class="backdrop hidden"></div>
   <div id="settingsPanel" class="settings hidden" role="dialog" aria-modal="true">
-    <button id="closeSettings" class="settings-close" type="button" aria-label="Close settings">Close</button>
-    <h2>Shortcut</h2>
-    <label for="shortcutInput">Press a key to trigger break.</label>
-    <input id="shortcutInput" type="text" placeholder="Press a key..." readonly />
-    <label class="setting-toggle" for="blankLineSetting">
-      <input id="blankLineSetting" type="checkbox" />
-      Insert blank lines between broken sentences
-    </label>
-    <label class="setting-toggle" for="preservePasteFormattingSetting">
-      <input id="preservePasteFormattingSetting" type="checkbox" />
-      Preserve formatting from paste
-    </label>
-    <label class="setting-toggle" for="alphabeticalSortSetting">
-      <input id="alphabeticalSortSetting" type="checkbox" />
-      Sort broken sentences alphabetically
-    </label>
-    <div class="sentence-ending-settings" aria-labelledby="sentenceEndingTitle">
-      <h3 id="sentenceEndingTitle">Treat as period</h3>
-      <div class="sentence-ending-grid">
-        <label class="setting-toggle" for="periodEndingSetting">
-          <input id="periodEndingSetting" type="checkbox" data-ending-character="." />
-          Period .
-        </label>
-        <label class="setting-toggle" for="questionEndingSetting">
-          <input id="questionEndingSetting" type="checkbox" data-ending-character="?" />
-          Question ?
-        </label>
-        <label class="setting-toggle" for="exclamationEndingSetting">
-          <input id="exclamationEndingSetting" type="checkbox" data-ending-character="!" />
-          Exclamation !
-        </label>
-        <label class="setting-toggle" for="colonEndingSetting">
-          <input id="colonEndingSetting" type="checkbox" data-ending-character=":" />
-          Colon :
-        </label>
-                <label class="setting-toggle" for="semicolonEndingSetting">
-          <input id="semicolonEndingSetting" type="checkbox" data-ending-character=";" />
-          Semicolon ;
-        </label>
-        <label class="setting-toggle" for="quoteEndingSetting">
-          <input id="quoteEndingSetting" type="checkbox" data-ending-character="&quot;" />
-          Quote "
-        </label>
+    <header class="settings-header">
+      <div>
+        <p class="settings-kicker">Settings</p>
+        <h2>Sentence Maker</h2>
       </div>
-      <label for="customEndingInput">Custom characters</label>
-      <input id="customEndingInput" type="text" placeholder="Example: | /" />
+      <button class="settings-about" type="button" disabled>
+        <span>About Sentence Maker</span>
+        <strong>Version <span id="appVersion">Loading...</span></strong>
+      </button>
+      <button id="closeSettings" class="settings-close" type="button" aria-label="Close settings">×</button>
+    </header>
+
+    <div class="settings-content">
+      <section class="settings-section" aria-labelledby="shortcutSettingsTitle">
+        <h3 id="shortcutSettingsTitle">Shortcut</h3>
+        <div class="setting-field">
+          <div class="setting-label-row">
+            <label for="shortcutInput">Trigger key</label>
+            <button class="info-button" type="button" data-info-key="shortcutKey" aria-label="Trigger key info">i</button>
+          </div>
+          <input id="shortcutInput" type="text" placeholder="Press a key..." readonly />
+        </div>
+        <details class="shortcut-rules">
+          <summary>Shortcut rules</summary>
+          <p class="hint">Letters/numbers or symbols alone are not allowed (press two together to assign combos, including
+            space/backspace combos). Space/Enter/Backspace can be assigned and will break instead of inserting/deleting.
+            Shift+Shift is blocked. Alt/Cmd (Option/Windows) combos (including with Shift) are allowed.</p>
+        </details>
+      </section>
+
+      <section class="settings-section" aria-labelledby="outputSettingsTitle">
+        <h3 id="outputSettingsTitle">Output</h3>
+        <label class="setting-toggle" for="blankLineSetting">
+          <span>Insert blank lines between broken sentences <button class="info-button" type="button" data-info-key="insertBlankLines" aria-label="Insert blank lines info">i</button></span>
+          <input id="blankLineSetting" type="checkbox" />
+        </label>
+        <label class="setting-toggle" for="preservePasteFormattingSetting">
+          <span>Preserve formatting from paste <button class="info-button" type="button" data-info-key="preservePasteFormatting" aria-label="Preserve paste formatting info">i</button></span>
+          <input id="preservePasteFormattingSetting" type="checkbox" />
+        </label>
+        <label class="setting-toggle" for="alphabeticalSortSetting">
+          <span>Sort broken sentences alphabetically <button class="info-button" type="button" data-info-key="sortAlphabetically" aria-label="Sort alphabetically info">i</button></span>
+          <input id="alphabeticalSortSetting" type="checkbox" />
+        </label>
+      </section>
+
+      <section class="settings-section sentence-ending-settings" aria-labelledby="sentenceEndingTitle">
+        <h3 id="sentenceEndingTitle">Sentence Endings</h3>
+        <div class="sentence-ending-grid">
+          <label class="setting-toggle" for="periodEndingSetting">
+            <span>Period . <button class="info-button" type="button" data-info-key="periodEnding" aria-label="Period ending info">i</button></span>
+            <input id="periodEndingSetting" type="checkbox" data-ending-character="." />
+          </label>
+          <label class="setting-toggle" for="questionEndingSetting">
+            <span>Question ? <button class="info-button" type="button" data-info-key="questionEnding" aria-label="Question ending info">i</button></span>
+            <input id="questionEndingSetting" type="checkbox" data-ending-character="?" />
+          </label>
+          <label class="setting-toggle" for="exclamationEndingSetting">
+            <span>Exclamation ! <button class="info-button" type="button" data-info-key="exclamationEnding" aria-label="Exclamation ending info">i</button></span>
+            <input id="exclamationEndingSetting" type="checkbox" data-ending-character="!" />
+          </label>
+          <label class="setting-toggle" for="colonEndingSetting">
+            <span>Colon : <button class="info-button" type="button" data-info-key="colonEnding" aria-label="Colon ending info">i</button></span>
+            <input id="colonEndingSetting" type="checkbox" data-ending-character=":" />
+          </label>
+          <label class="setting-toggle" for="semicolonEndingSetting">
+            <span>Semicolon ; <button class="info-button" type="button" data-info-key="semicolonEnding" aria-label="Semicolon ending info">i</button></span>
+            <input id="semicolonEndingSetting" type="checkbox" data-ending-character=";" />
+          </label>
+          <label class="setting-toggle" for="quoteEndingSetting">
+            <span>Quote " <button class="info-button" type="button" data-info-key="quoteEnding" aria-label="Quote ending info">i</button></span>
+            <input id="quoteEndingSetting" type="checkbox" data-ending-character="&quot;" />
+          </label>
+        </div>
+        <div class="setting-field">
+          <div class="setting-label-row">
+            <label for="customEndingInput">Custom characters</label>
+            <button class="info-button" type="button" data-info-key="customEndings" aria-label="Custom endings info">i</button>
+          </div>
+          <input id="customEndingInput" type="text" placeholder="Example: | /" />
+        </div>
+      </section>
+
+      <section class="settings-section" aria-labelledby="tooltipSettingsTitle">
+        <h3 id="tooltipSettingsTitle">Information Tips</h3>
+        <label class="setting-toggle" for="tooltipEnabledSetting">
+          <span>Enable information tips <button class="info-button" type="button" data-info-key="tooltipEnabled" aria-label="Enable information tips info">i</button></span>
+          <input id="tooltipEnabledSetting" type="checkbox" />
+        </label>
+        <label class="setting-toggle" for="tooltipPinOnClickSetting">
+          <span>Keep clicked information open <button class="info-button" type="button" data-info-key="tooltipPinOnClick" aria-label="Keep clicked information open info">i</button></span>
+          <input id="tooltipPinOnClickSetting" type="checkbox" />
+        </label>
+        <label class="setting-toggle" for="tooltipInstantSetting">
+          <span>Show hover information instantly <button class="info-button" type="button" data-info-key="tooltipInstant" aria-label="Instant information tips info">i</button></span>
+          <input id="tooltipInstantSetting" type="checkbox" />
+        </label>
+        <label class="setting-toggle" for="tooltipHoverEnabledSetting">
+          <span>Show information on hover <button class="info-button" type="button" data-info-key="tooltipHoverEnabled" aria-label="Hover information tips info">i</button></span>
+          <input id="tooltipHoverEnabledSetting" type="checkbox" />
+        </label>
+        <label class="setting-toggle" for="closeInfoPopoverOnOutsideClickSetting">
+          <span>Clicking outside closes info <button class="info-button" type="button" data-info-key="closeInfoPopoverOnOutsideClick" aria-label="Outside click closes information info">i</button></span>
+          <input id="closeInfoPopoverOnOutsideClickSetting" type="checkbox" />
+        </label>
+        <div class="setting-field tooltip-delay-field">
+          <div class="setting-label-row">
+            <label for="tooltipDelaySetting">Tooltip delay</label>
+            <button class="info-button" type="button" data-info-key="tooltipDelayMs" aria-label="Tooltip delay info">i</button>
+          </div>
+          <input id="tooltipDelaySetting" type="number" min="0" step="0.5" />
+        </div>
+      </section>
+
+      <section class="settings-section settings-location" aria-labelledby="settingsLocationTitle">
+        <h3 id="settingsLocationTitle">Saved Settings Location</h3>
+        <div class="setting-field">
+          <div class="setting-label-row">
+            <label for="settingsFileDir">Folder</label>
+            <button class="info-button" type="button" data-info-key="settingsFileDir" aria-label="Saved settings location info">i</button>
+          </div>
+          <div class="settings-location-row">
+            <input id="settingsFileDir" type="text" readonly value="Loading..." />
+            <button id="browseSettingsFileDir" type="button">Browse</button>
+            <button id="resetSettingsFileDir" type="button">Reset</button>
+          </div>
+        </div>
+        <p class="current-location-readout">File: <code id="settingsFilePath">Loading...</code></p>
+      </section>
+
+      <section class="settings-section settings-actions" aria-labelledby="resetSettingsTitle">
+        <div class="setting-label-row">
+          <h3 id="resetSettingsTitle">Reset</h3>
+          <button class="info-button" type="button" data-info-key="resetSettings" aria-label="Reset defaults info">i</button>
+        </div>
+        <button id="resetSettings" type="button">Reset Defaults</button>
+      </section>
     </div>
-    <details class="shortcut-rules">
-      <summary>Shortcut rules</summary>
-      <p class="hint">Letters/numbers or symbols alone are not allowed (press two together to assign combos, including
-        space/backspace combos). Space/Enter/Backspace can be assigned and will break instead of inserting/deleting.
-        Shift+Shift is blocked. Alt/Cmd (Option/Windows) combos (including with Shift) are allowed.</p>
-    </details>
-    <div class="settings-location" aria-labelledby="settingsLocationTitle">
-      <h3 id="settingsLocationTitle">Saved settings location</h3>
-      <label for="settingsFileDir">Folder</label>
-      <div class="settings-location-row">
-        <input id="settingsFileDir" type="text" readonly value="Loading..." />
-        <button id="browseSettingsFileDir" type="button">Browse</button>
-        <button id="resetSettingsFileDir" type="button">Reset</button>
-      </div>
-      <p class="current-location-readout">File: <code id="settingsFilePath">Loading...</code></p>
-    </div>
-    <div class="settings-actions">
-      <button id="resetSettings" type="button">Reset Defaults</button>
+  </div>
+
+  <div id="infoOverlay" class="info-overlay hidden" role="dialog" aria-modal="false" aria-labelledby="infoOverlayTitle">
+    <div class="info-card">
+      <button id="closeInfoOverlay" class="info-close" type="button" aria-label="Close information">×</button>
+      <h3 id="infoOverlayTitle">Setting</h3>
+      <p id="infoOverlayText"></p>
     </div>
   </div>
 

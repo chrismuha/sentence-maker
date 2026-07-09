@@ -6,5 +6,6 @@ contextBridge.exposeInMainWorld("sentenceMakerSettings", {
   getPath: () => ipcRenderer.invoke("settings:path"),
   getFileStatus: () => ipcRenderer.invoke("settings:file-status"),
   setFileDir: () => ipcRenderer.invoke("settings:set-file-dir"),
-  resetFileDir: () => ipcRenderer.invoke("settings:reset-file-dir")
+  resetFileDir: () => ipcRenderer.invoke("settings:reset-file-dir"),
+  getAppVersion: () => ipcRenderer.invoke("app:version")
 });

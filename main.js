@@ -137,9 +137,23 @@ function getDefaultSettings() {
       shortcutKey: null,
       insertBlankLines: true,
       sortAlphabetically: false,
-      preservePasteFormatting: true
+      preservePasteFormatting: true,
+      closeInfoPopoverOnOutsideClick: true,
+      tooltipEnabled: true,
+      tooltipHoverEnabled: false,
+      tooltipInstant: true,
+      tooltipPinOnClick: false,
+      tooltipDelayMs: 500
     };
   }
+}
+
+function normalizeTooltipDelayMs(value, fallbackValue = 500) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return fallbackValue;
+  }
+  return Math.round(parsed / 500) * 500;
 }
 
 function normalizeSentenceEndings(value, fallbackValue) {
@@ -183,6 +197,22 @@ function ensureSettingsFile() {
       preservePasteFormatting: typeof parsed.preservePasteFormatting === "boolean"
         ? parsed.preservePasteFormatting
         : defaultSettings.preservePasteFormatting !== false,
+      closeInfoPopoverOnOutsideClick: typeof parsed.closeInfoPopoverOnOutsideClick === "boolean"
+        ? parsed.closeInfoPopoverOnOutsideClick
+        : defaultSettings.closeInfoPopoverOnOutsideClick !== false,
+      tooltipEnabled: typeof parsed.tooltipEnabled === "boolean"
+        ? parsed.tooltipEnabled
+        : defaultSettings.tooltipEnabled !== false,
+      tooltipHoverEnabled: typeof parsed.tooltipHoverEnabled === "boolean"
+        ? parsed.tooltipHoverEnabled
+        : Boolean(defaultSettings.tooltipHoverEnabled),
+      tooltipInstant: typeof parsed.tooltipInstant === "boolean"
+        ? parsed.tooltipInstant
+        : defaultSettings.tooltipInstant !== false,
+      tooltipPinOnClick: typeof parsed.tooltipPinOnClick === "boolean"
+        ? parsed.tooltipPinOnClick
+        : Boolean(defaultSettings.tooltipPinOnClick),
+      tooltipDelayMs: normalizeTooltipDelayMs(parsed.tooltipDelayMs, defaultSettings.tooltipDelayMs),
       sentenceEndingCharacters: normalizeSentenceEndings(
         parsed.sentenceEndingCharacters,
         defaultSettings.sentenceEndingCharacters
@@ -219,6 +249,22 @@ function saveSettings(nextSettings) {
     preservePasteFormatting: typeof nextSettings?.preservePasteFormatting === "boolean"
       ? nextSettings.preservePasteFormatting
       : defaultSettings.preservePasteFormatting !== false,
+    closeInfoPopoverOnOutsideClick: typeof nextSettings?.closeInfoPopoverOnOutsideClick === "boolean"
+      ? nextSettings.closeInfoPopoverOnOutsideClick
+      : defaultSettings.closeInfoPopoverOnOutsideClick !== false,
+    tooltipEnabled: typeof nextSettings?.tooltipEnabled === "boolean"
+      ? nextSettings.tooltipEnabled
+      : defaultSettings.tooltipEnabled !== false,
+    tooltipHoverEnabled: typeof nextSettings?.tooltipHoverEnabled === "boolean"
+      ? nextSettings.tooltipHoverEnabled
+      : Boolean(defaultSettings.tooltipHoverEnabled),
+    tooltipInstant: typeof nextSettings?.tooltipInstant === "boolean"
+      ? nextSettings.tooltipInstant
+      : defaultSettings.tooltipInstant !== false,
+    tooltipPinOnClick: typeof nextSettings?.tooltipPinOnClick === "boolean"
+      ? nextSettings.tooltipPinOnClick
+      : Boolean(defaultSettings.tooltipPinOnClick),
+    tooltipDelayMs: normalizeTooltipDelayMs(nextSettings?.tooltipDelayMs, defaultSettings.tooltipDelayMs),
     sentenceEndingCharacters: normalizeSentenceEndings(
       nextSettings?.sentenceEndingCharacters,
       defaultSettings.sentenceEndingCharacters
@@ -322,6 +368,7 @@ app.whenReady().then(() => {
   ipcMain.handle("settings:file-status", () => getSettingsFileStatus());
   ipcMain.handle("settings:set-file-dir", (event) => setSettingsFileDir(event));
   ipcMain.handle("settings:reset-file-dir", () => resetSettingsFileDir());
+  ipcMain.handle("app:version", () => app.getVersion());
 
   createWindow();
 
