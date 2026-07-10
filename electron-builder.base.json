@@ -1,6 +1,6 @@
 {
   "appId": "com.mcr.sentencemaker",
-  "productName": "SentenceMaker",
+  "productName": "Sentence Maker",
   "directories": {
     "output": "release"
   },

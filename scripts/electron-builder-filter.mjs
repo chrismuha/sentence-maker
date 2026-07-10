@@ -14,7 +14,6 @@ try {
   // Shared patch helper not available; continue without it.
 }
 
-const productName = "SentenceMaker";
 const suppressedPatterns = ["duplicate dependency references"];
 
 function sanitizeMacMetadata() {
@@ -91,7 +90,7 @@ function shouldCopyArtifact(entryName) {
       entryName.includes("x64") ||
       (!entryName.includes("arm64") &&
         !entryName.includes("universal") &&
-        new RegExp(`^${productName}-.*\\.(dmg|zip)(\\.blockmap)?$`).test(entryName))
+        /^Sentence ?Maker-.*\.(dmg|zip)(\.blockmap)?$/.test(entryName))
     );
   }
 
@@ -103,7 +102,7 @@ function isMacBuildArtifact(entryName) {
   if (entryName === "mac" || entryName === "mac-arm64" || entryName === "mac-universal" || entryName === "mac-x64") {
     return true;
   }
-  return new RegExp(`^${productName}-.*\\.(dmg|zip|blockmap)$`).test(entryName);
+  return /^Sentence ?Maker-.*\.(dmg|zip|blockmap)$/.test(entryName);
 }
 
 if (process.platform === "darwin" && !hasCustomOutput) {
