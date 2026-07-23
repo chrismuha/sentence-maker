@@ -23,6 +23,7 @@
     "build:mac:x64": "npm run dist:mac:x64",
     "build:mac:arm64": "npm run dist:mac:arm64",
     "build:mac:universal": "npm run dist:mac:universal",
+    "build:mac": "npm run build:mac:universal",
     "dist:win": "npm run generate-icons && npm run build:web && node ./scripts/electron-builder-filter.mjs --win --x64 --arm64 --config electron-builder.base.json",
     "dist:linux": "npm run build:web && node ./scripts/electron-builder-filter.mjs --linux --config electron-builder.base.json",
     "build:win": "npm run dist:win",
