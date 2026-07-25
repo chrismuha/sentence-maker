@@ -4,7 +4,7 @@ const { join } = require('path');
 const net = require('net');
 
 const projectRoot = join(__dirname, '..');
-const defaultPort = 5173;
+const defaultPort = 5184;
 const maxPort = 5200;
 
 function checkPort(port) {
