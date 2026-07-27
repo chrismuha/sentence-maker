@@ -20,14 +20,18 @@ function sanitizeMacMetadata() {
   if (process.platform !== "darwin") return;
 
   const root = process.cwd();
-  const targets = ["assets", "dist", "index.html", "main.js", "preload", "release", "script", "styles.css"]
+  const targets = ["assets", "dist", "index.html", "main.js", "preload", "script", "styles.css"]
     .map((target) => path.resolve(root, target))
     .filter((target) => fs.existsSync(target));
 
-  try {
-    execFileSync("find", [root, "-name", "._*", "-delete"], { stdio: "ignore" });
-  } catch {
-    // Keep build moving.
+  for (const target of targets) {
+    try {
+      if (fs.statSync(target).isDirectory()) {
+        execFileSync("find", [target, "-name", "._*", "-delete"], { stdio: "ignore" });
+      }
+    } catch {
+      // Keep build moving.
+    }
   }
 
   if (targets.length === 0) return;
