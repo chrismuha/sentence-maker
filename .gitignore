@@ -57,3 +57,7 @@ Electron Framework.framework/
 .idea/
 *.swp
 *.swo
+
+# Dropbox numbered dependency and conflict copies
+node_modules */
+*conflicted copy*
