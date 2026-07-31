@@ -112,11 +112,11 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
     "@electron-forge/plugin-fuses": "^7.10.2",
     "@electron/fuses": "^1.8.0",
-    "concurrently": "^10.0.3",
+    "concurrently": "^10.0.4",
     "cross-env": "^10.1.0",
     "electron": "^43.2.0",
     "electron-builder": "^26.8.1",
-    "vite": "^8.1.4",
+    "vite": "^8.2.0",
     "wait-on": "^9.1.0"
   },
   "dependencies": {
