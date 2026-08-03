@@ -180,6 +180,8 @@ child.on("exit", (code, signal) => {
       if (requestedArch) {
         process.stdout.write(`  • filtered artifacts for ${requestedArch}: ${copied.join(", ") || "none"}\n`);
       }
+      fs.rmSync(tempOutputDir, { recursive: true, force: true });
+      process.stdout.write("  • removed temporary build output\n");
     } catch (error) {
       process.stderr.write(`  • warning: build succeeded but copy to ${projectOutputDir} failed: ${error.message}\n`);
     }
