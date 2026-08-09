@@ -103,14 +103,6 @@
     "afterPack": "./scripts/electron-builder-after-pack.cjs"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^7.11.2",
-    "@electron-forge/maker-deb": "^7.11.2",
-    "@electron-forge/maker-dmg": "^7.11.2",
-    "@electron-forge/maker-rpm": "^7.11.2",
-    "@electron-forge/maker-squirrel": "^7.11.2",
-    "@electron-forge/maker-zip": "^7.11.2",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
-    "@electron-forge/plugin-fuses": "^7.11.2",
     "@electron/fuses": "^1.8.0",
     "concurrently": "^10.0.4",
     "cross-env": "^10.1.0",
@@ -129,6 +121,9 @@
     "form-data": "4.0.6",
     "lodash": "4.18.1",
     "brace-expansion": "5.0.9",
-    "js-yaml": "4.3.1"
+    "js-yaml": "4.3.1",
+    "postcss": {
+      "nanoid": "3.3.17"
+    }
   }
 }
