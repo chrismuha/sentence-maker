@@ -5,7 +5,6 @@ const net = require('net');
 
 const projectRoot = join(__dirname, '..');
 const defaultPort = 5184;
-const maxPort = 5200;
 
 function checkPort(port) {
   return new Promise((resolve) => {
@@ -17,12 +16,7 @@ function checkPort(port) {
 }
 
 async function findFreePort(startPort = defaultPort) {
-  for (let port = startPort; port <= maxPort; port += 1) {
-    if (await checkPort(port)) {
-      return port;
-    }
-  }
-  return null;
+  return (await checkPort(startPort)) ? startPort : null;
 }
 
 function binPath(name) {
@@ -130,7 +124,7 @@ async function main() {
   const preferredPort = normalizeArgs();
   const freePort = await findFreePort(preferredPort);
   if (!freePort) {
-    process.stderr.write(`No available port found between ${preferredPort} and ${maxPort}.\n`);
+    process.stderr.write(`Assigned dev port ${preferredPort} is already in use.\n`);
     process.exit(1);
   }
 
