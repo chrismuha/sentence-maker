@@ -15,6 +15,33 @@ function checkPort(port) {
   });
 }
 
+function waitForServer(port, timeoutMs = 60000) {
+  const deadline = Date.now() + timeoutMs;
+
+  return new Promise((resolve, reject) => {
+    const tryConnect = () => {
+      const socket = net.createConnection({ host: '127.0.0.1', port });
+      socket.setTimeout(1000);
+      socket.once('connect', () => {
+        socket.destroy();
+        resolve();
+      });
+      const retry = () => {
+        socket.destroy();
+        if (Date.now() >= deadline) {
+          reject(new Error(`Timed out waiting for Vite on http://127.0.0.1:${port}/`));
+          return;
+        }
+        setTimeout(tryConnect, 250);
+      };
+      socket.once('error', retry);
+      socket.once('timeout', retry);
+    };
+
+    tryConnect();
+  });
+}
+
 async function findFreePort(startPort = defaultPort) {
   return (await checkPort(startPort)) ? startPort : null;
 }
@@ -141,6 +168,7 @@ async function main() {
   const electronBin = binPath('electron');
 
   const renderer = spawnProcess(viteBin, ['dev', '--host', '127.0.0.1', '--port', String(freePort)], env);
+  await waitForServer(freePort);
   const main = spawnProcess(electronBin, ['.', '--disable-cache', '--disable-gpu', '--disable-gpu-compositing', '--disable-logging', '--log-level=3'], env);
 
   let cleanupCalled = false;
