@@ -3,11 +3,11 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 const root = process.cwd();
 const sourcePng = path.join(root, "assets", "icons", "icon.png");
-const iconsetDir = path.join(root, "assets", "icons", "icon.iconset");
 const icoPngDir = path.join(root, "assets", "icons", "ico-pngs");
 const targetIcns = path.join(root, "assets", "icons", "icon.icns");
 const targetIco = path.join(root, "assets", "icons", "icon.ico");
@@ -117,8 +117,9 @@ function generateIcns(sourceHash) {
   }
 
   const sizes = [16, 32, 128, 256, 512];
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "sentence-maker-icon-"));
+  const iconsetDir = path.join(tempRoot, "icon.iconset");
 
-  fs.rmSync(iconsetDir, { recursive: true, force: true });
   fs.mkdirSync(iconsetDir, { recursive: true });
 
   try {
@@ -134,7 +135,7 @@ function generateIcns(sourceHash) {
     replaceFileIfChanged(tempIcns, targetIcns);
     fs.writeFileSync(icnsSourceStampPath, `${sourceHash}\n`, "utf8");
   } finally {
-    fs.rmSync(iconsetDir, { recursive: true, force: true });
+    fs.rmSync(tempRoot, { recursive: true, force: true });
   }
 }
 
