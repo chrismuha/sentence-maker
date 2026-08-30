@@ -10,7 +10,7 @@
 
 <body>
   <div class="app">
-    <div id="editor" class="editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Type your text here..."></div>
+    <div id="editor" class="editor" contenteditable="true" role="textbox" aria-label="Sentence text" aria-multiline="true" data-placeholder="Type your text here..."></div>
     <div class="controls">
       <button id="breakBtn">Break</button>
       <button id="clearTextBtn" type="button">Clear</button>
@@ -21,11 +21,11 @@
   </div>
 
   <div id="backdrop" class="backdrop hidden"></div>
-  <div id="settingsPanel" class="settings hidden" role="dialog" aria-modal="true">
+  <div id="settingsPanel" class="settings hidden" role="dialog" aria-modal="true" aria-labelledby="settingsDialogTitle">
     <header class="settings-header">
       <div>
         <p class="settings-kicker">Settings</p>
-        <h2>Sentence Maker</h2>
+        <h2 id="settingsDialogTitle">Sentence Maker</h2>
       </div>
       <button class="settings-about" type="button" disabled>
         <span>About Sentence Maker</span>

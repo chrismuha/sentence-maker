@@ -1,6 +1,6 @@
 # Sentence Maker (Electron)
 
-Simple desktop app that breaks text into individual sentences.
+Simple desktop tool for organizing text into individual sentences.
 
 ## Run locally
 1. Install dependencies: `npm install`
