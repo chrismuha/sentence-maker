@@ -11,7 +11,7 @@
     "start:prod": "cross-env NODE_DISABLE_COMPILE_CACHE=1 MCR_STARTUP_MODE=offline NODE_ENV=production node ./scripts/dev-main-wrapper.cjs --offline",
     "predev": "cross-env NODE_DISABLE_COMPILE_CACHE=1 node ./scripts/repair-if-present.cjs",
     "dev": "node ./scripts/run-shared-if-present.cjs ../_shared/vite-electron-dev.mjs --port 5184",
-    "dev:renderer": "cross-env NODE_DISABLE_COMPILE_CACHE=1 vite dev --host 127.0.0.1 --port 5184",
+    "dev:renderer": "cross-env NODE_DISABLE_COMPILE_CACHE=1 vite dev --host 127.0.0.1 --port 5184 --strictPort",
     "dev:main": "node ./scripts/dev-main-wrapper.cjs",
     "build": "npm run dist",
     "build:web": "cross-env NODE_DISABLE_COMPILE_CACHE=1 vite build",
