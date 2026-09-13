@@ -11,6 +11,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   merge-after-build:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
@@ -19,7 +23,6 @@ jobs:
 
     steps:
       - name: Read Dependabot update metadata
-        id: metadata
         uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -28,11 +31,11 @@ jobs:
         shell: bash
         run: |
           for attempt in {1..120}; do
-            check="$({
+            check="$(
               gh api \
                 "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/check-runs?per_page=100" \
                 --jq '([.check_runs[] | select(.name == "build")] | sort_by(.started_at) | last) // {}'
-            })"
+            )"
 
             status="$(jq -r '.status // "missing"' <<< "$check")"
             conclusion="$(jq -r '.conclusion // ""' <<< "$check")"
@@ -57,13 +60,30 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
-      - name: Merge tested commit
+      - name: Merge tested commit and delete branch
+        shell: bash
         run: |
-          gh pr merge \
-            --squash \
-            --delete-branch \
-            --match-head-commit "$HEAD_SHA" \
-            "$PR_URL"
+          for attempt in {1..5}; do
+            echo "Merge attempt $attempt of 5"
+            if gh pr merge \
+              --squash \
+              --delete-branch \
+              --match-head-commit "$HEAD_SHA" \
+              "$PR_URL"; then
+              exit 0
+            fi
+
+            state="$(gh pr view "$PR_URL" --json state --jq '.state' 2>/dev/null || true)"
+            if [[ "$state" == "MERGED" ]]; then
+              echo "The pull request was merged by another workflow run."
+              exit 0
+            fi
+
+            sleep $((attempt * 15))
+          done
+
+          echo "GitHub rejected all merge attempts; leaving the tested pull request open."
+          exit 1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
