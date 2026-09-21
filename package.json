@@ -46,7 +46,9 @@
     "start:cloud": "node ./scripts/run-shared-if-present.cjs ../_shared/vite-electron-dev.mjs --port 5184",
     "start:offline": "cross-env NODE_DISABLE_COMPILE_CACHE=1 MCR_STARTUP_MODE=offline NODE_ENV=production node ./scripts/dev-main-wrapper.cjs --offline",
     "dev:cloud": "node ./scripts/run-shared-if-present.cjs ../_shared/vite-electron-dev.mjs --port 5184",
-    "dev:offline": "cross-env NODE_DISABLE_COMPILE_CACHE=1 MCR_STARTUP_MODE=offline NODE_ENV=development node ./scripts/dev-main-wrapper.cjs --offline"
+    "dev:offline": "cross-env NODE_DISABLE_COMPILE_CACHE=1 MCR_STARTUP_MODE=offline NODE_ENV=development node ./scripts/dev-main-wrapper.cjs --offline",
+    "dev:web": "cross-env NODE_DISABLE_COMPILE_CACHE=1 vite dev --host 127.0.0.1 --port 5184 --strictPort --open /dev-preview.html",
+    "dev:mobile:web": "npm run dev:web"
   },
   "keywords": [],
   "author": {

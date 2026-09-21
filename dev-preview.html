@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sentence Maker · Responsive Preview</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; background: #10131a; color: #f5f7fb; }
+    .toolbar { flex: 0 0 auto; position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; align-items: end; gap: 12px; padding: 12px 16px; background: #191e29; border-bottom: 1px solid #30394a; box-shadow: 0 8px 24px #0005; }
+    .brand { margin-right: auto; }
+    .brand strong { display: block; font-size: 15px; }
+    .brand span, label span, .dimensions { color: #aeb8ca; font-size: 12px; }
+    .audit { min-width: 92px; color: #7ee2b8; font-size: 12px; font-weight: 800; }
+    .audit.warning { color: #ffb36a; }
+    label { display: grid; gap: 4px; }
+    select, input, button { height: 34px; border: 1px solid #465269; border-radius: 7px; background: #252c3a; color: inherit; padding: 0 10px; font: inherit; }
+    input { width: 82px; }
+    button { cursor: pointer; }
+    button:hover { background: #323c4f; }
+    .custom { display: none; align-items: end; flex-wrap: wrap; gap: 8px; }
+    .custom.visible { display: flex; }
+    .cutout-size { display: flex; gap: 8px; }
+    .cutout-size.hidden { display: none; }
+    main { flex: 1 1 auto; min-height: 0; padding: 28px; overflow: auto; scrollbar-width: none; -ms-overflow-style: none; display: grid; place-items: start center; }
+    main::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    .device { position: relative; padding: 10px; border-radius: 24px; background: #080a0e; box-shadow: 0 18px 60px #000b, 0 0 0 1px #3a4353; transition: width .2s, height .2s; }
+    .screen-cutout { position: absolute; z-index: 2; left: 50%; background: #050506; transform: translateX(-50%); pointer-events: none; transition: opacity .15s, transform .15s; }
+    .screen-cutout.island { top: 19px; width: 116px; height: 32px; border-radius: 999px; box-shadow: inset 0 0 0 1px #18181b, 0 1px 3px #0008; }
+    .screen-cutout.notch { top: 10px; width: 154px; height: 31px; border-radius: 0 0 18px 18px; }
+    .screen-cutout.punch { top: 20px; width: 13px; height: 13px; border-radius: 50%; box-shadow: inset 0 0 0 2px #141821; }
+    .screen-cutout.none { opacity: 0; transform: translateX(-50%) scale(.85); }
+    .home-indicator { position: absolute; z-index: 2; bottom: 17px; left: 50%; width: 126px; height: 5px; border-radius: 999px; background: #09090b; box-shadow: 0 0 0 1px #fff2; transform: translateX(-50%); pointer-events: none; }
+    .home-indicator.hidden { display: none; }
+    iframe { display: block; width: 100%; height: 100%; border: 0; border-radius: 15px; background: white; }
+    @media (max-width: 700px) { main { padding: 14px; } .toolbar { position: static; } }
+  </style>
+</head>
+<body>
+  <header class="toolbar">
+    <div class="brand"><strong>Sentence Maker responsive preview</strong><span>Choose a viewport to test the responsive layout</span></div>
+    <label><span>Device</span>
+      <select id="preset">
+        <option value="800x900">Foldable (Open)</option>
+        <option value="360x800" data-cutout="punch">Galaxy S</option>
+        <option value="768x1024">iPad</option>
+        <option value="820x1180">iPad Air</option>
+        <option value="744x1133">iPad mini 8.3-inch</option>
+        <option value="834x1210">iPad Pro 11-inch</option>
+        <option value="1032x1376">iPad Pro 13-inch</option>
+        <option value="360x780" data-cutout="notch" data-home-indicator>iPhone 13 mini</option>
+        <option value="402x874" data-cutout="island" data-home-indicator selected>iPhone 17</option>
+        <option value="402x874" data-cutout="island" data-home-indicator>iPhone 17 Pro</option>
+        <option value="440x956" data-cutout="island" data-home-indicator>iPhone 17 Pro Max</option>
+        <option value="420x912" data-cutout="island" data-home-indicator>iPhone Air</option>
+        <option value="375x667">iPhone SE</option>
+        <option value="412x915" data-cutout="punch">Pixel 8</option>
+        <option value="320x568">Small Phone</option>
+        <option value="1080x1920" data-cabinet>Casino Cabinet · Portrait</option>
+        <option value="1920x1080" data-cabinet>Casino Cabinet · Landscape</option>
+        <option value="1280x1024" data-cabinet>Casino Cabinet · 5:4</option>
+        <option value="custom">Custom</option>
+      </select>
+    </label>
+    <div class="custom" id="custom">
+      <label><span>Width</span><input id="width" type="number" min="240" max="2000" value="390" /></label>
+      <label><span>Height</span><input id="height" type="number" min="320" max="2000" value="844" /></label>
+      <label><span>Cutout</span>
+        <select id="custom-cutout">
+          <option value="none">None</option>
+          <option value="island">Pill / Dynamic Island</option>
+          <option value="notch">Notch</option>
+          <option value="punch">Camera hole</option>
+        </select>
+      </label>
+      <div class="cutout-size hidden" id="cutout-size">
+        <label><span>Cutout width</span><input id="cutout-width" type="number" min="1" max="400" value="116" /></label>
+        <label><span>Cutout height</span><input id="cutout-height" type="number" min="1" max="200" value="32" /></label>
+      </div>
+    </div>
+    <button id="rotate" type="button" title="Swap width and height">↻ Rotate</button>
+    <span class="dimensions" id="dimensions"></span>
+    <span class="audit" id="audit" role="status">Checking layout…</span>
+  </header>
+  <main><div class="device" id="device"><div class="screen-cutout none" id="screen-cutout" aria-hidden="true"></div><div class="home-indicator hidden" id="home-indicator" aria-hidden="true"></div><iframe id="app-preview" src="/" title="Sentence Maker application"></iframe></div></main>
+  <script>
+    const preset = document.querySelector('#preset');
+    const custom = document.querySelector('#custom');
+    const width = document.querySelector('#width');
+    const height = document.querySelector('#height');
+    const customCutout = document.querySelector('#custom-cutout');
+    const cutoutSize = document.querySelector('#cutout-size');
+    const cutoutWidth = document.querySelector('#cutout-width');
+    const cutoutHeight = document.querySelector('#cutout-height');
+    const device = document.querySelector('#device');
+    const dimensions = document.querySelector('#dimensions');
+    const screenCutout = document.querySelector('#screen-cutout');
+    const homeIndicator = document.querySelector('#home-indicator');
+    const appPreview = document.querySelector('#app-preview');
+
+    const audit = document.querySelector('#audit');
+
+    function getDocuments(rootDocument) {
+      const documents = [rootDocument];
+      rootDocument.querySelectorAll('iframe').forEach((frame) => {
+        try {
+          if (frame.contentDocument) documents.push(...getDocuments(frame.contentDocument));
+        } catch (_) {}
+      });
+      return documents;
+    }
+
+    function auditLayout() {
+      const root = appPreview.contentDocument;
+      if (!root) return;
+      const documents = getDocuments(root);
+      const overflows = documents.filter((doc) => {
+        const element = doc.documentElement;
+        return element.scrollWidth > element.clientWidth + 2;
+      });
+      const verticalOverflow = Math.max(0, ...documents.map((doc) => {
+        const element = doc.documentElement;
+        return element.scrollHeight - element.clientHeight;
+      }));
+      const widthStatus = overflows.length ? `⚠ ${overflows.length} horizontal overflow` : '✓ Width fits';
+      const heightStatus = verticalOverflow > 2 ? `Vertical scrolling: ${verticalOverflow}px` : 'Height fits';
+      const status = `${widthStatus} · ${heightStatus}`;
+      if (audit.textContent !== status) audit.textContent = status;
+      audit.title = 'Checks the app and embedded frames. Vertical scrolling shows the largest document height overflow; it may be intentional.';
+      audit.classList.toggle('warning', Boolean(overflows.length));
+    }
+
+    function applySafeArea(option, cutout) {
+      const root = appPreview.contentDocument?.documentElement;
+      if (!root) return;
+      const topInsets = { island: '54px', notch: '44px', punch: '36px' };
+      const customOffsets = { island: 22, notch: 13, punch: 23 };
+      const customInset = `${Math.max(0, Number(cutoutHeight.value) || 0) + (customOffsets[cutout] || 0)}px`;
+      root.style.setProperty('--safe-area-inset-top', preset.value === 'custom' ? (cutout === 'none' ? '0px' : customInset) : (topInsets[cutout] || '0px'));
+      root.style.setProperty('--safe-area-inset-bottom', option?.hasAttribute('data-home-indicator') ? '24px' : '0px');
+    }
+
+    function applyCutout(option) {
+      const isCustom = preset.value === 'custom';
+      const cutout = isCustom ? customCutout.value : (option?.dataset.cutout || 'none');
+      screenCutout.className = `screen-cutout ${cutout}`;
+      cutoutSize.classList.toggle('hidden', !isCustom || cutout === 'none');
+      if (isCustom && cutout !== 'none') {
+        screenCutout.style.width = `${Math.max(1, Number(cutoutWidth.value) || 1)}px`;
+        screenCutout.style.height = `${Math.max(1, Number(cutoutHeight.value) || 1)}px`;
+      } else {
+        screenCutout.style.removeProperty('width');
+        screenCutout.style.removeProperty('height');
+      }
+      applySafeArea(option, cutout);
+    }
+
+    function resize(nextWidth, nextHeight) {
+      const w = Math.max(240, Number(nextWidth) || 390);
+      const h = Math.max(320, Number(nextHeight) || 844);
+      width.value = w;
+      height.value = h;
+      device.style.width = `${w + 20}px`;
+      device.style.height = `${h + 20}px`;
+      dimensions.textContent = `${w} × ${h} CSS px`;
+    }
+    function applyPreset() {
+      custom.classList.toggle('visible', preset.value === 'custom');
+      const option = preset.selectedOptions[0];
+      applyCutout(option);
+      homeIndicator.classList.toggle('hidden', !option?.hasAttribute('data-home-indicator'));
+      if (preset.value !== 'custom') resize(...preset.value.split('x'));
+      window.setTimeout(auditLayout, 250);
+    }
+    preset.addEventListener('change', applyPreset);
+    width.addEventListener('input', () => resize(width.value, height.value));
+    height.addEventListener('input', () => resize(width.value, height.value));
+    customCutout.addEventListener('change', () => {
+      const defaults = { island: [116, 32], notch: [154, 31], punch: [13, 13] };
+      const size = defaults[customCutout.value];
+      if (size) [cutoutWidth.value, cutoutHeight.value] = size;
+      applyPreset();
+    });
+    cutoutWidth.addEventListener('input', applyPreset);
+    cutoutHeight.addEventListener('input', applyPreset);
+    document.querySelector('#rotate').addEventListener('click', () => {
+      preset.value = 'custom';
+      resize(height.value, width.value);
+      applyPreset();
+    });
+    appPreview.addEventListener('load', () => {
+      applyPreset();
+      window.setTimeout(auditLayout, 900);
+    });
+    window.setInterval(auditLayout, 1500);
+    applyPreset();
+  </script>
+</body>
+</html>
