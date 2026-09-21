@@ -26,6 +26,18 @@
     main { flex: 1 1 auto; min-height: 0; padding: 28px; overflow: auto; scrollbar-width: none; -ms-overflow-style: none; display: grid; place-items: start center; }
     main::-webkit-scrollbar { display: none; width: 0; height: 0; }
     .device { position: relative; padding: 10px; border-radius: 24px; background: #080a0e; box-shadow: 0 18px 60px #000b, 0 0 0 1px #3a4353; transition: width .2s, height .2s; }
+    .cabinet-screen { display: none; position: relative; overflow: hidden; border: 8px solid #11151d; border-radius: 16px; background: radial-gradient(circle at 50% 20%, #394a78, #121722 58%, #080a0e); box-shadow: inset 0 0 0 1px #4f5b70, 0 8px 24px #0009; color: #dce7ff; place-items: center; text-align: center; text-transform: uppercase; letter-spacing: .14em; font-weight: 900; }
+    .cabinet-screen::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, #fff0 0 5px, #9fc5ff0a 6px); pointer-events: none; }
+    .cabinet-screen span { position: relative; padding: 18px; text-shadow: 0 0 18px #89b4ff; }
+    .device.cabinet { --cabinet-width: 1080px; --cabinet-height: 1920px; width: calc(var(--cabinet-width) + 96px); height: auto; padding: 28px 38px 48px; display: grid; gap: 16px; border-radius: 54px 54px 30px 30px; background: linear-gradient(90deg, #090b10, #293041 4%, #111620 12% 88%, #293041 96%, #090b10); box-shadow: 0 30px 90px #000d, inset 0 0 0 2px #515d72, inset 0 0 45px #000; }
+    .device.cabinet .cabinet-screen { display: grid; }
+    .device.cabinet .cabinet-topper { height: max(180px, calc(var(--cabinet-height) * .18)); border-radius: 44px 44px 16px 16px; background: radial-gradient(ellipse at center, #8a52ff, #29205c 48%, #090b16 78%); }
+    .device.cabinet .cabinet-upper { height: max(280px, calc(var(--cabinet-height) * .42)); background: radial-gradient(circle at 50% 50%, #22636f, #102c3d 48%, #080b11 78%); }
+    .device.cabinet .app-screen { position: relative; box-sizing: content-box; width: var(--cabinet-width); height: var(--cabinet-height); border: 10px solid #07090d; border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 2px #566176, 0 12px 30px #000b; }
+    .device.cabinet .cabinet-controls { height: max(240px, calc(var(--cabinet-height) * .28)); transform: perspective(900px) rotateX(16deg); transform-origin: top; background: radial-gradient(circle at 20% 50%, #db3b50 0 5%, #4b131b 6% 9%, transparent 10%), radial-gradient(circle at 50% 50%, #48b8ff 0 5%, #123b58 6% 9%, transparent 10%), radial-gradient(circle at 80% 50%, #ffd84d 0 5%, #5b4810 6% 9%, transparent 10%), linear-gradient(#202838, #0e121a); }
+    .device.cabinet .cabinet-controls span { align-self: end; font-size: max(14px, calc(var(--cabinet-width) * .018)); }
+    .device.cabinet .screen-cutout, .device.cabinet .home-indicator { display: none; }
+    .app-screen { width: 100%; height: 100%; }
     .screen-cutout { position: absolute; z-index: 2; left: 50%; background: #050506; transform: translateX(-50%); pointer-events: none; transition: opacity .15s, transform .15s; }
     .screen-cutout.island { top: 19px; width: 116px; height: 32px; border-radius: 999px; box-shadow: inset 0 0 0 1px #18181b, 0 1px 3px #0008; }
     .screen-cutout.notch { top: 10px; width: 154px; height: 31px; border-radius: 0 0 18px 18px; }
@@ -43,6 +55,7 @@
     <label><span>Device</span>
       <select id="preset">
         <option value="800x900">Foldable (Open)</option>
+        <option value="344x882" data-cutout="punch">Foldable (Closed)</option>
         <option value="360x800" data-cutout="punch">Galaxy S</option>
         <option value="768x1024">iPad</option>
         <option value="820x1180">iPad Air</option>
@@ -57,9 +70,9 @@
         <option value="375x667">iPhone SE</option>
         <option value="412x915" data-cutout="punch">Pixel 8</option>
         <option value="320x568">Small Phone</option>
-        <option value="1080x1920" data-cabinet>Casino Cabinet · Portrait</option>
-        <option value="1920x1080" data-cabinet>Casino Cabinet · Landscape</option>
-        <option value="1280x1024" data-cabinet>Casino Cabinet · 5:4</option>
+        <option value="1080x1920" data-cabinet>Casino Cabinet · 4-screen Portrait</option>
+        <option value="1920x1080" data-cabinet>Casino Cabinet · 4-screen Landscape</option>
+        <option value="1280x1024" data-cabinet>Casino Cabinet · 4-screen 5:4</option>
         <option value="custom">Custom</option>
       </select>
     </label>
@@ -83,7 +96,7 @@
     <span class="dimensions" id="dimensions"></span>
     <span class="audit" id="audit" role="status">Checking layout…</span>
   </header>
-  <main><div class="device" id="device"><div class="screen-cutout none" id="screen-cutout" aria-hidden="true"></div><div class="home-indicator hidden" id="home-indicator" aria-hidden="true"></div><iframe id="app-preview" src="/" title="Sentence Maker application"></iframe></div></main>
+  <main><div class="device" id="device"><div class="cabinet-screen cabinet-topper" aria-hidden="true"><span>Topper display</span></div><div class="cabinet-screen cabinet-upper" aria-hidden="true"><span>Upper display</span></div><div class="app-screen"><div class="screen-cutout none" id="screen-cutout" aria-hidden="true"></div><div class="home-indicator hidden" id="home-indicator" aria-hidden="true"></div><iframe id="app-preview" src="/" title="Sentence Maker application"></iframe></div><div class="cabinet-screen cabinet-controls" aria-hidden="true"><span>Control deck touchscreen</span></div></div></main>
   <script>
     const preset = document.querySelector('#preset');
     const custom = document.querySelector('#custom');
@@ -161,9 +174,20 @@
       const h = Math.max(320, Number(nextHeight) || 844);
       width.value = w;
       height.value = h;
-      device.style.width = `${w + 20}px`;
-      device.style.height = `${h + 20}px`;
-      dimensions.textContent = `${w} × ${h} CSS px`;
+      const isCabinet = preset.selectedOptions[0]?.hasAttribute('data-cabinet');
+      device.classList.toggle('cabinet', isCabinet);
+      if (isCabinet) {
+        device.style.removeProperty('width');
+        device.style.removeProperty('height');
+        device.style.setProperty('--cabinet-width', `${w}px`);
+        device.style.setProperty('--cabinet-height', `${h}px`);
+      } else {
+        device.style.removeProperty('--cabinet-width');
+        device.style.removeProperty('--cabinet-height');
+        device.style.width = `${w + 20}px`;
+        device.style.height = `${h + 20}px`;
+      }
+      dimensions.textContent = `${w} × ${h} CSS px${isCabinet ? ' main display · 4 screens' : ''}`;
     }
     function applyPreset() {
       custom.classList.toggle('visible', preset.value === 'custom');
