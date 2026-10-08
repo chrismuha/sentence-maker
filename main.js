@@ -64,7 +64,7 @@ function applyMacDockIcon() {
     return;
   }
 
-  const dockIcon = nativeImage.createFromPath(getResourceIconPath("icon.png", ["icon.icns"]));
+  const dockIcon = nativeImage.createFromPath(getResourceIconPath("icon-mac-standard.png", ["icon.icns"]));
   if (!dockIcon.isEmpty()) {
     app.dock.setIcon(dockIcon);
   }

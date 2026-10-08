@@ -147,3 +147,6 @@ if (!fs.existsSync(sourcePng)) {
 const sourceHash = hashFile(sourcePng);
 generateIco(sourceHash);
 generateIcns(sourceHash);
+
+// Share ProfitPulse framing between the app bundle and running Dock.
+execFileSync("python3", ["scripts/standardize-macos-icon.py", "assets/icons/icon.png", "assets/icons/icon-mac-standard.png", "assets/icons/icon.icns"], {stdio:"inherit"});
