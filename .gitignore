@@ -29,6 +29,18 @@ coverage/
 .vite/
 .eslintcache
 *.tsbuildinfo
+.capacitor-sync-state.json
+
+# Temporary workspaces and generated previews
+tmp/
+temp/
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
 
 # Compiled and packaged output
 dist/
@@ -40,9 +52,13 @@ build/Release/
 release/*
 !release/.gitkeep
 
-# Project-specific generated icon files
-assets/icons/icon.iconset/
-assets/icons/ico-pngs/
+# Native mobile build output
+/android/
+/ios/
+android/.gradle/
+android/**/build/
+ios/build/
+ios/DerivedData/
 
 # Generated packaging metadata
 *.tgz
