@@ -83,6 +83,7 @@
       "preload.js",
       "settings.json",
       "startup-mode.cjs",
+      "app-data-path.cjs",
       "package.json"
     ],
     "asar": true,

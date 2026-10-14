@@ -1,3 +1,5 @@
+// Resolve the macOS profile folder before any module captures storage paths.
+require('./app-data-path.cjs').initializeAppData(require('electron').app, {"displayName": "Sentence Maker", "legacyNames": ["sentence-maker"]});
 const { app, BrowserWindow, dialog, ipcMain, nativeImage } = require("electron");
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
