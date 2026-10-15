@@ -40,7 +40,7 @@
     "lint": "npm run lint:js && npm run lint:ui",
     "lint:js": "node --check main.js && node --check preload/main.js && node --check script/script.js && node --check startup-mode.cjs",
     "lint:ui": "node scripts/check-ui-accessibility.mjs",
-    "generate-icons": "node ./scripts/generate-macos-icon.mjs",
+    "generate-icons": "node ./scripts/generate-macos-icon.mjs && python3 scripts/generate-dmg-icon.py assets/icons/icon.icns assets/icons/icon-dmg.png assets/icons/icon-dmg.icns",
     "all": "bash ../../../SCRIPTS/script-set-1/run-all.sh",
     "scripts": "bash ../../../SCRIPTS/script-set-1/run-all.sh",
     "start:cloud": "node ./scripts/run-shared-if-present.cjs ../_shared/vite-electron-dev.mjs --port 5184",
@@ -48,7 +48,8 @@
     "dev:cloud": "node ./scripts/run-shared-if-present.cjs ../_shared/vite-electron-dev.mjs --port 5184",
     "dev:offline": "cross-env NODE_DISABLE_COMPILE_CACHE=1 MCR_STARTUP_MODE=offline NODE_ENV=development node ./scripts/dev-main-wrapper.cjs --offline",
     "dev:web": "cross-env NODE_DISABLE_COMPILE_CACHE=1 vite dev --host 127.0.0.1 --port 5184 --strictPort --open /dev-preview.html",
-    "dev:mobile:web": "npm run dev:web"
+    "dev:mobile:web": "npm run dev:web",
+    "verify:dmg-icon": "swift scripts/verify-dmg-icon-size.swift assets/icons/icon-dmg.icns"
   },
   "keywords": [],
   "author": {
@@ -106,7 +107,10 @@
       "icon": "assets/icons"
     },
     "forceCodeSigning": false,
-    "afterPack": "./scripts/electron-builder-after-pack.cjs"
+    "afterPack": "./scripts/electron-builder-after-pack.cjs",
+    "dmg": {
+      "icon": "assets/icons/icon-dmg.icns"
+    }
   },
   "devDependencies": {
     "@electron/fuses": "^1.8.0",

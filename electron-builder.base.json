@@ -26,5 +26,8 @@
   "linux": {
     "target": "AppImage",
     "icon": "assets/icons/icon.png"
+  },
+  "dmg": {
+    "icon": "assets/icons/icon-dmg.icns"
   }
 }
