@@ -49,7 +49,14 @@
     "dev:offline": "cross-env NODE_DISABLE_COMPILE_CACHE=1 MCR_STARTUP_MODE=offline NODE_ENV=development node ./scripts/dev-main-wrapper.cjs --offline",
     "dev:web": "cross-env NODE_DISABLE_COMPILE_CACHE=1 vite dev --host 127.0.0.1 --port 5184 --strictPort --open /dev-preview.html",
     "dev:mobile:web": "npm run dev:web",
-    "verify:dmg-icon": "swift scripts/verify-dmg-icon-size.swift assets/icons/icon-dmg.icns"
+    "verify:dmg-icon": "swift scripts/verify-dmg-icon-size.swift assets/icons/icon-dmg.icns",
+    "prebuild:web": "node ./scripts/prepare-build-output.cjs",
+    "predist:mac:x64": "node ./scripts/prepare-build-output.cjs",
+    "predist:mac:arm64": "node ./scripts/prepare-build-output.cjs",
+    "predist:mac:universal": "node ./scripts/prepare-build-output.cjs",
+    "predist:win": "node ./scripts/prepare-build-output.cjs",
+    "predist:linux": "node ./scripts/prepare-build-output.cjs",
+    "postclean": "node ./scripts/prepare-build-output.cjs"
   },
   "keywords": [],
   "author": {
@@ -153,5 +160,11 @@
     "brace-expansion@1": "1.1.21",
     "brace-expansion@2": "2.1.7",
     "brace-expansion@5": "5.0.12"
-  }
+  },
+  "mcrBuildOutputs": [
+    "dist",
+    "release",
+    "out",
+    ".vite/build"
+  ]
 }
