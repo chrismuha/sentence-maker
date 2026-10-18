@@ -114,7 +114,7 @@
   },
   "devDependencies": {
     "@electron/fuses": "^1.8.0",
-    "concurrently": "^10.0.5",
+    "concurrently": "^10.0.6",
     "cross-env": "^10.1.0",
     "electron": "^44.7.0",
     "electron-builder": "^26.15.3",
