@@ -1,3 +1,6 @@
+// Bootstrap must run with Node alone, before package binaries are available.
+process.env.NODE_DISABLE_COMPILE_CACHE = process.env.NODE_DISABLE_COMPILE_CACHE || '1';
+
 const { existsSync } = require('fs');
 const { join, dirname } = require('path');
 const { spawnSync } = require('child_process');
@@ -17,4 +20,4 @@ const result = spawnSync(process.execPath, [repairFile, ...process.argv.slice(2)
   stdio: 'inherit',
 });
 
-process.exit(result.status ?? 0);
+process.exit(result.status ?? 1);
