@@ -4,7 +4,7 @@
   "description": "Desktop tool for organizing text into individual sentences.",
   "main": "main.js",
   "scripts": {
-    "clean": "node -e \"const fs=require('fs'); for (const p of ['dist','release','out']) fs.rmSync(p,{recursive:true,force:true}); fs.mkdirSync('release',{recursive:true}); fs.writeFileSync('release/.gitkeep','\\n')\"",
+    "clean": "node ./scripts/clean-build-output.cjs dist release out",
     "prestart": "node ./scripts/repair-if-present.cjs",
     "start": "node ./scripts/run-shared-if-present.cjs ../_shared/vite-electron-dev.mjs --port 5184",
     "start:fixed": "concurrently \"npm run dev:renderer\" \"cross-env NODE_DISABLE_COMPILE_CACHE=1 VITE_DEV_SERVER_URL=http://127.0.0.1:5184/ npm run dev:main\"",
