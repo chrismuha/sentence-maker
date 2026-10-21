@@ -1,6 +1,7 @@
 // Resolve the macOS profile folder before any module captures storage paths.
 require('./app-data-path.cjs').initializeAppData(require('electron').app, {"displayName": "Sentence Maker", "legacyNames": ["sentence-maker"]});
-const { app, BrowserWindow, dialog, ipcMain, nativeImage } = require("electron");
+const { fitWindowToWorkArea } = require('./window-geometry.cjs');
+const { app, BrowserWindow, dialog, ipcMain, nativeImage, screen } = require("electron");
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-gpu-compositing');
@@ -323,8 +324,7 @@ function resetSettingsFileDir() {
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 900,
-    height: 700,
+    ...fitWindowToWorkArea(screen.getPrimaryDisplay(), { width: 900, height: 700 }),
     title: APP_NAME,
     icon: getAppIconPath(),
     webPreferences: {

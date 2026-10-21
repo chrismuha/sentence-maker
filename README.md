@@ -16,3 +16,7 @@ Simple desktop tool for organizing text into individual sentences.
 - The app includes a default [`settings.json`](./settings.json).
 - On launch, Sentence Maker creates and uses a writable `settings.json` on the Desktop by default, matching Profit Pulse's settings-file behavior.
 - Electron's user-data folder stores `settings-location.json`, which remembers the folder that contains the writable `settings.json`.
+
+## User guide
+
+See [User Guide](USER_GUIDE.md) for current workflows, storage, and limitations.

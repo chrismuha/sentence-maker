@@ -1,0 +1,45 @@
+/* Guide layout shared by the standalone utility guides. */
+.mcr-guide-launch { display:inline-flex; align-items:center; justify-content:center; gap:.6rem; align-self:flex-start; padding:.7rem 1rem; border:1px solid var(--guide-border,#cbd5e1); border-radius:10px; background:var(--guide-surface,#fff); color:var(--guide-text,#18263c); font:600 .9rem system-ui,sans-serif; cursor:pointer; }
+.mcr-guide-launch:hover { border-color:#2563eb; box-shadow:0 3px 12px #172b4d18; }
+.mcr-guide-launch svg,.mcr-guide-mark svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.7; }
+.mcr-guide { --guide-surface:#fff; --guide-text:#18263c; --guide-muted:#526176; --guide-border:#dce3ed; color:var(--guide-text); background:var(--guide-surface); padding:0; border:1px solid var(--guide-border); border-radius:22px; width:min(790px,calc(100vw - 40px)); max-width:none; max-height:calc(100dvh - 40px); box-shadow:0 28px 80px #060d2166; font:400 15px/1.65 system-ui,-apple-system,sans-serif; }
+.mcr-guide[open] { display:flex; flex-direction:column; }
+.mcr-guide::backdrop { background:#080f20b8; backdrop-filter:blur(4px); }
+.mcr-guide * { box-sizing:border-box; }
+.mcr-guide-hero { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:start; gap:18px; padding:26px 28px; color:#fff; background:linear-gradient(130deg,#142642,#1f4a82 65%,#226f91); flex:none; }
+.mcr-guide-mark { display:grid; place-items:center; width:54px; height:54px; border-radius:15px; background:#ffffff1f; border:1px solid #ffffff30; }
+.mcr-guide .mcr-guide-eyebrow { margin:0 0 4px; color:#c9def6; font-size:.72rem; font-weight:750; letter-spacing:.12em; text-transform:uppercase; }
+.mcr-guide h2 { margin:0 0 5px; color:#fff; font-size:1.8rem; line-height:1.2; }
+.mcr-guide .mcr-guide-subtitle { margin:0; color:#dfebfa; font-size:.9rem; line-height:1.5; }
+.mcr-guide button { font:inherit; cursor:pointer; }
+.mcr-guide .mcr-guide-close { display:grid; place-items:center; width:38px; height:38px; padding:0; border:1px solid #ffffff55; border-radius:10px; background:#10234066; color:#fff; font-size:1.5rem; line-height:1; flex:none; }
+.mcr-guide-close:hover { background:#ffffff22; }
+.mcr-guide-options { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:13px 28px; border-bottom:1px solid var(--guide-border); flex:none; }
+.mcr-guide-options label { display:flex; align-items:center; gap:9px; margin:0; color:var(--guide-muted); font-size:.84rem; }
+.mcr-guide-options input { width:16px; height:16px; margin:0; accent-color:#2563eb; }
+.mcr-guide-options select { max-width:100%; width:260px; padding:8px 10px; border:1px solid var(--guide-border); border-radius:8px; color:var(--guide-text); background:var(--guide-surface); font:inherit; font-size:.82rem; }
+.mcr-guide-content { min-height:0; overflow:auto; padding:24px 28px; overscroll-behavior:contain; }
+.mcr-guide-topic { display:grid; grid-template-columns:36px minmax(0,1fr); gap:14px; padding:0 0 22px; margin:0 0 22px; border-bottom:1px solid var(--guide-border); }
+.mcr-guide-topic:last-child { padding-bottom:0; margin-bottom:0; border-bottom:0; }
+.mcr-guide-topic[hidden] { display:none; }
+.mcr-guide-number { display:grid; place-items:center; width:36px; height:36px; border-radius:10px; background:#2563eb12; color:#2563eb; font-weight:750; font-size:.8rem; border:1px solid #2563eb28; }
+.mcr-guide h3 { margin:2px 0 10px; color:var(--guide-text); font-size:1.05rem; line-height:1.4; }
+.mcr-guide-topic p { margin:0 0 12px; color:var(--guide-muted); overflow-wrap:anywhere; font-size:.93rem; line-height:1.75; }
+.mcr-guide-topic p:last-child { margin-bottom:0; }
+.mcr-guide-footer { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:15px 28px; border-top:1px solid var(--guide-border); flex:none; }
+.mcr-guide-footer button { padding:9px 15px; color:var(--guide-text); background:var(--guide-surface); border:1px solid var(--guide-border); border-radius:9px; font-size:.85rem; font-weight:650; }
+.mcr-guide-footer button:last-child { color:#fff; background:#225b9c; border-color:#225b9c; }
+.mcr-guide-footer button:disabled { opacity:.4; cursor:default; }
+.mcr-guide-footer[hidden] { display:none; }
+.mcr-guide-status { color:var(--guide-muted); font-size:.8rem; text-align:center; }
+.mcr-guide :focus-visible,.mcr-guide-launch:focus-visible { outline:3px solid #60a5fa; outline-offset:3px; }
+.mcr-guide-dark { --guide-surface:#18222f; --guide-text:#edf4ff; --guide-muted:#bdcbdc; --guide-border:#344358; }
+.mcr-guide-dark .mcr-guide-number { color:#93c5fd; background:#60a5fa18; border-color:#60a5fa35; }
+@media(max-width:540px) { .mcr-guide { width:calc(100vw - 20px); max-height:calc(100dvh - 20px); border-radius:16px; } .mcr-guide-hero { gap:12px; padding:20px 16px; } .mcr-guide-mark { width:38px; height:38px; border-radius:11px; } .mcr-guide h2 { font-size:1.5rem; } .mcr-guide-options,.mcr-guide-footer { padding:12px 16px; } .mcr-guide-options select { width:100%; } .mcr-guide-content { padding:20px 16px; } .mcr-guide-topic { grid-template-columns:30px minmax(0,1fr); gap:10px; } .mcr-guide-number { width:30px; height:30px; } }
+
+@media screen and (max-height: 480px) {
+  .mcr-guide[open] { display:block; overflow-y:auto; }
+  .mcr-guide-content { overflow:visible; }
+  .mcr-guide-hero { padding:16px; }
+  .mcr-guide-options,.mcr-guide-footer { padding:10px 16px; }
+}

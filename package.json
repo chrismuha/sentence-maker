@@ -92,6 +92,7 @@
       "settings.json",
       "startup-mode.cjs",
       "app-data-path.cjs",
+      "window-geometry.cjs",
       "package.json"
     ],
     "asar": true,
