@@ -20,3 +20,7 @@ Simple desktop tool for organizing text into individual sentences.
 ## User guide
 
 See [User Guide](USER_GUIDE.md) for current workflows, storage, and limitations.
+
+## Release notes
+
+Open **Release Notes** in the app or see [Release Notes](RELEASE_NOTES.md) for dated development history and version context.
