@@ -45,7 +45,23 @@ function prepareBuildOutputs(projectRoot = process.cwd(), options = {}) {
     throw new Error('mcrBuildOutputs must contain only audited generated-output paths.');
   }
   const results = [];
-  for (const relative of new Set(outputs)) {
+  const localOutputs = new Set(outputs);
+  // Keep the release parent synchronized: Git tracks its .gitkeep. Ignoring
+  // that parent can cause File Provider to replace it with a numbered copy.
+  if (localOutputs.delete('release')) {
+    const release = path.join(projectRoot, 'release');
+    if (containsSymlink(projectRoot, 'release')) throw new Error('symlinked release output is not modified');
+    fs.mkdirSync(release, { recursive: true });
+    for (const name of ['com.apple.fileprovider.ignore#P', 'com.dropbox.ignored']) {
+      const current = run('xattr', ['-p', name, release], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+      if (current.status === 0) {
+        const removed = run('xattr', ['-d', name, release], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+        if (removed.error || removed.status !== 0) throw new Error('Could not restore Dropbox sync for the release parent.');
+      }
+    }
+    for (const platform of ['macos', 'windows', 'linux']) localOutputs.add(`release/${platform}`);
+  }
+  for (const relative of localOutputs) {
     const output = path.join(projectRoot, relative);
     try {
       if (containsSymlink(projectRoot, relative)) throw new Error('symlinked output is not modified');
