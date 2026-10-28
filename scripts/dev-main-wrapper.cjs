@@ -4,6 +4,7 @@ const { existsSync } = require('fs');
 
 const scriptDir = __dirname;
 const projectRoot = join(scriptDir, '..');
+const originalParentPid = process.ppid;
 
 function binPath(name) {
   const suffix = process.platform === 'win32' ? '.cmd' : '';
@@ -126,9 +127,13 @@ async function shutdownAndExit(code = 0) {
 process.on('SIGINT', () => void shutdownAndExit(130));
 process.on('SIGTERM', () => void shutdownAndExit(143));
 process.on('SIGBREAK', () => void shutdownAndExit(130));
+process.on('SIGHUP', () => void shutdownAndExit(129));
 process.on('exit', () => signalChild(child, 'SIGKILL'));
 
-const parentPid = Number.parseInt(process.env.MCR_DEV_PARENT_PID || '', 10);
+const configuredParentPid = Number.parseInt(process.env.MCR_DEV_PARENT_PID || '', 10);
+const parentPid = Number.isInteger(configuredParentPid) && configuredParentPid > 0
+  ? configuredParentPid
+  : originalParentPid;
 if (Number.isInteger(parentPid) && parentPid > 0) {
   parentMonitor = setInterval(() => {
     if (process.ppid === 1 || !isProcessAlive(parentPid)) {

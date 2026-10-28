@@ -5,10 +5,15 @@ const { existsSync } = require('fs');
 const { join, dirname } = require('path');
 const { spawnSync } = require('child_process');
 
+if (process.env.MCR_REPAIR_SKIP === '1' || process.argv.includes('--skip')) {
+  process.exit(0);
+}
+
 const scriptDir = dirname(__filename);
 const repairFileCandidates = [
   join(scriptDir, '..', '..', '_shared', 'repair.mjs'),
   join(scriptDir, '..', '_shared', 'repair.mjs'),
+  join(scriptDir, 'repair.mjs'),
 ];
 const repairFile = repairFileCandidates.find((candidate) => existsSync(candidate));
 

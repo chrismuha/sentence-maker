@@ -56,7 +56,7 @@ function cleanupProjectDevProcesses() {
 }
 
 function signalChild(child, signal) {
-  if (!child || child.killed) return;
+  if (!child) return;
 
   if (process.platform === 'win32' && child.pid) {
     const result = spawnSync('taskkill.exe', ['/pid', String(child.pid), '/t', '/f'], {
@@ -108,6 +108,12 @@ async function stopChild(child) {
     signalChild(child, 'SIGKILL');
     await waitForChildExit(child, 500);
   }
+}
+
+function getPreferredPort() {
+  const index = sharedArgs.indexOf('--port');
+  const inline = sharedArgs.find(arg => arg.startsWith('--port='));
+  return (index >= 0 ? sharedArgs[index + 1] : '') || (inline ? inline.split('=')[1] : '') || '5184';
 }
 
 function runChild(command, args, options = {}) {
@@ -170,7 +176,7 @@ if (!sharedPath) {
   process.stdout.write(`Skipping missing shared helper: ${sharedFile}\n`);
   const helperName = sharedFile.split('/').pop();
   const fallbackCommands = {
-    'vite-electron-dev.mjs': ['node', [join(scriptDir, 'start-local-fallback.cjs'), '--prefer-port=5184']],
+    'vite-electron-dev.mjs': ['node', [join(scriptDir, 'start-local-fallback.cjs'), `--prefer-port=${getPreferredPort()}`]],
   };
 
   const fallback = fallbackCommands[helperName];

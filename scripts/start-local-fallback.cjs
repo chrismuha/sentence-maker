@@ -148,6 +148,7 @@ function normalizeArgs() {
 }
 
 async function main() {
+  const originalParentPid = process.ppid;
   const preferredPort = normalizeArgs();
   const freePort = await findFreePort(preferredPort);
   if (!freePort) {
@@ -194,12 +195,16 @@ async function main() {
   process.on('SIGINT', () => void cleanupAndExit(130));
   process.on('SIGTERM', () => void cleanupAndExit(143));
   process.on('SIGBREAK', () => void cleanupAndExit(130));
+  process.on('SIGHUP', () => void cleanupAndExit(129));
   process.on('exit', () => {
     signalChild(renderer, 'SIGKILL');
     signalChild(main, 'SIGKILL');
   });
 
-  const parentPid = Number.parseInt(process.env.MCR_DEV_PARENT_PID || '', 10);
+  const configuredParentPid = Number.parseInt(process.env.MCR_DEV_PARENT_PID || '', 10);
+  const parentPid = Number.isInteger(configuredParentPid) && configuredParentPid > 0
+    ? configuredParentPid
+    : originalParentPid;
   if (Number.isInteger(parentPid) && parentPid > 0) {
     parentMonitor = setInterval(() => {
       if (process.ppid === 1 || !isProcessAlive(parentPid)) {
