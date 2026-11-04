@@ -2,6 +2,10 @@
 
 Current project version: **1.0.0**. These dated development milestones are reconstructed from Git history; they are not separate published version releases.
 
+## November 3, 2026 — Help and support
+
+- Added the shared Help screen with contact details, issue-report drafts, project-specific Known issues, and tips and troubleshooting.
+
 ## October 24, 2026 — Documentation
 
 - Added in-app Release Notes and a source history document.

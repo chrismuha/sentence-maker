@@ -1,0 +1,82 @@
+:host { display: inline-flex; }
+/* Self-contained palette: host app tokens do not change this shared screen. */
+.suite-help-panel, .suite-help-trigger {
+  --panel-bg: #111;
+  --fg: #fff;
+  --muted-bg: #333;
+  --input-border: #ffffffa0;
+  --blue: #2563eb;
+  --brand-accent: #ff6600;
+  font: 16px/1.5 system-ui, sans-serif;
+  text-align: left;
+  letter-spacing: normal;
+}
+.suite-help-panel[data-theme="light"], .suite-help-trigger[data-theme="light"] {
+  --panel-bg: #fff;
+  --fg: #111318;
+  --muted-bg: #f1f3f5;
+  --input-border: #00000080;
+}
+.suite-help-panel *, .suite-help-panel *::before, .suite-help-panel *::after { box-sizing: border-box; }
+.suite-help-panel h2 { font-size: 24px; margin: 0 0 16px; font-weight: 700; line-height: 1.3; }
+.suite-help-panel h3 { font-size: 18px; font-weight: 700; line-height: 1.4; }
+.suite-help-panel p { margin: 16px 0; }
+.suite-help-panel ul { padding-left: 24px; }
+.suite-help-panel button, .suite-help-trigger { height: auto; font-weight: 400; }
+
+.suite-help-trigger { font: 400 13.3333px Arial, sans-serif; display: inline-flex; align-items: center; gap: .55rem; min-height: 44px; padding: .7rem 1rem; border: 1px solid var(--brand-accent); border-radius: .6rem; background: var(--panel-bg); color: var(--fg); cursor: pointer; }
+.suite-help-trigger:hover { background: var(--muted-bg); box-shadow: 0 0 20px -10px var(--brand-accent); }
+.suite-help-panel { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--panel-bg); color: var(--fg); box-sizing: border-box; }
+.suite-help-panel[open] { display: flex; flex-direction: column; }
+.suite-help-panel::backdrop { background: #000a; }
+.suite-help-panel header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--input-border); }
+.suite-help-panel h1 { font-weight: 700; line-height: 1.3; margin: 0; font-size: clamp(22px, 4vw, 32px); }
+.suite-help-panel header p { margin: 4px 0 0; }
+.suite-help-panel nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 24px; border-bottom: 1px solid var(--input-border); }
+.suite-help-panel button { padding: 10px 14px; min-height: 44px; border: 1px solid var(--blue); border-radius: 8px; background: var(--panel-bg); color: var(--fg); cursor: pointer; font: inherit; font-weight: 700; }
+.suite-help-panel .suite-help-close {
+  background: #b42318;
+  border: none;
+  color: #fff;
+  font-weight: 700;
+}
+.suite-help-panel .suite-help-close:hover { background: #922018; }
+.suite-help-panel button[aria-current] { background: var(--muted-bg); border-color: var(--brand-accent); }
+.suite-help-panel main { flex: 1; min-height: 0; overflow-y: auto; padding: 24px max(20px, calc((100% - 900px) / 2)); overflow-wrap: anywhere; line-height: 1.6; }
+.suite-help-panel article { padding: 16px; margin: 16px 0; border: 1px solid var(--input-border); border-radius: 12px; }
+.suite-help-panel h3 { margin-top: 0; }
+.suite-help-links { display: grid; gap: 12px; }
+.suite-help-panel a { color: var(--fg); text-decoration: underline; text-underline-offset: 4px; }
+.suite-help-links a, .suite-help-report { display: block; padding: 14px; border: 1px solid var(--blue); border-radius: 8px; background: var(--panel-bg); color: var(--fg); }
+.suite-help-panel li { margin: 12px 0; }
+.suite-help-panel :focus-visible, .suite-help-trigger:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+/* Contact cards keep the same appearance in every app using this component. */
+.suite-help-links { gap: 14px; margin-block: 24px; }
+.suite-help-panel .suite-contact-card {
+  --contact-accent: var(--blue);
+  display: grid; grid-template-columns: 48px minmax(0, 1fr) 24px;
+  align-items: center; gap: 18px; padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--contact-accent) 45%, var(--input-border));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--contact-accent) 5%, var(--panel-bg));
+  text-decoration: none;
+  transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.suite-help-panel .suite-contact-phone { --contact-accent: #169c91; }
+.suite-help-panel .suite-contact-website { --contact-accent: var(--brand-accent); }
+.suite-help-panel .suite-contact-card:hover {
+  border-color: var(--contact-accent);
+  background: color-mix(in srgb, var(--contact-accent) 10%, var(--panel-bg));
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--contact-accent) 12%, transparent);
+}
+.suite-contact-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: color-mix(in srgb, var(--contact-accent) 15%, var(--panel-bg)); }
+.suite-contact-icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.suite-contact-details { display: grid; gap: 4px; min-width: 0; }
+.suite-contact-label { font-size: 13px; font-weight: 600; color: var(--fg); }
+.suite-contact-details strong { font-size: clamp(16px, 2.5vw, 19px); font-weight: 600; overflow-wrap: anywhere; }
+.suite-contact-hint { font-size: 13px; color: var(--fg); }
+.suite-contact-arrow { font-size: 24px; color: var(--fg); }
+@media (max-width: 480px) {
+  .suite-help-panel .suite-contact-card { grid-template-columns: 40px minmax(0, 1fr) 18px; gap: 12px; padding: 16px; }
+  .suite-contact-icon { width: 40px; height: 40px; border-radius: 12px; }
+}
