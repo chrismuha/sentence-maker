@@ -8,6 +8,6 @@ Vue apps use the identical portable `SuiteHelp.vue` owned by `MCR SOFTWARE SUITE
 
 Keep documented issues, planned features, user guides, and release notes in sync. Preserve the app’s support contact overrides. No app version or installer release is changed by adopting this Help interface.
 
-## Help access update · November 4, 2026
+## Help access update · November 5, 2026
 
-Standalone floating Help launchers now use a compact 44px-wide tab on the right edge above the bottom controls. Tap it or focus it with the keyboard to open the same five Help sections. Existing inline Help buttons keep their location. Close or Escape returns focus to Help. This access change does not change the app version.
+Help uses the standard horizontal button in normal page flow. It occupies its own layout space and does not float over controls. Only Monopoly Deal uses the edge tab. The five Help sections and app version are unchanged.
