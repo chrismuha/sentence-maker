@@ -11,7 +11,7 @@ class SuiteHelp extends HTMLElement {
     const version = packageInfo.version;
     const reportUrl = 'mailto:muhachris297@gmail.com?subject='+encodeURIComponent(`${details.appName} ${version} issue report`)+'&body='+encodeURIComponent(`${details.appName} version: ${version}\nDevice and operating system:\nWorkspace or screen:\nSteps to reproduce:\n1. \nExpected result:\nActual result or exact error:\nHow often it happens:\n\nPlease remove customer, financial, and other private information from screenshots or attachments.`);
     root.innerHTML = `<style>${styles}</style>
-      <button type="button" class="suite-help-trigger" data-theme="${details.theme}" aria-haspopup="dialog"><span aria-hidden="true">?</span> Help</button>
+      <button type="button" class="suite-help-trigger" data-placement="${this.style.position==='fixed'?'edge':'inline'}" data-theme="${details.theme}" aria-haspopup="dialog"><span aria-hidden="true">?</span> Help</button>
       <dialog class="suite-help-panel" data-theme="${details.theme}" aria-labelledby="suite-help-title">
         <header><div><h1 id="suite-help-title">${escape(details.appName)} Help</h1><p>Version ${escape(version)}</p></div><button type="button" class="suite-help-close" autofocus aria-label="Close Help">Close</button></header>
         <nav aria-label="Help sections">${sections.map(([id,label])=>`<button type="button" data-page="${id}" ${id==='contact'?'aria-current="page"':''}>${label}</button>`).join('')}</nav>

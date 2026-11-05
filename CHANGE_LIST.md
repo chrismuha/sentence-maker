@@ -1,5 +1,10 @@
 # sentence-maker Change List
 
+## November 4, 2026 — Help access
+
+- Kept Help in its existing inline location and added support for compact edge placement to the shared Help component.
+- Updated the shared Help access guide while preserving Contact us, Report an issue, Known issues, Coming soon, and Tips & troubleshooting.
+
 ## October 29, 2026 — Current Device Web Preview
 
 - Add Current device as the default screen tester preset, filling the available browser area without a simulated device frame.

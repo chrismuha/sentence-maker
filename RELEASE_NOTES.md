@@ -1,5 +1,10 @@
 # Sentence Maker release notes
 
+## November 4, 2026 — Help access
+
+- Kept Help in its existing inline location and added support for compact edge placement to the shared Help component.
+- Updated the shared Help access guide while preserving Contact us, Report an issue, Known issues, Coming soon, and Tips & troubleshooting.
+
 Current project version: **1.0.0**. These dated development milestones are reconstructed from Git history; they are not separate published version releases.
 
 ## November 3, 2026 — Help and support
