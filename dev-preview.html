@@ -59,34 +59,36 @@
     <label><span>Device</span>
       <select id="preset">
         <option value="current" selected>Current device</option>
-        <option value="890x626" data-cutout="island">iPhone Duo (Open)</option>
-        <option value="466x678" data-cutout="island">iPhone Duo (Closed)</option>
-        <option value="750x832" data-cutout="punch">Galaxy Z Fold7 (Open)</option>
-        <option value="412x960" data-cutout="punch">Galaxy Z Fold7 (Closed)</option>
+        <option value="1280x1024" data-cabinet>Casino Cabinet · 4-screen 5:4</option>
+        <option value="1920x1080" data-cabinet>Casino Cabinet · 4-screen Landscape</option>
+        <option value="1080x1920" data-cabinet>Casino Cabinet · 4-screen Portrait</option>
         <option value="360x800" data-cutout="punch">Galaxy S</option>
+        <option value="349x316">Galaxy Z Flip8 (Closed cover)</option>
+        <option value="360x840" data-cutout="punch">Galaxy Z Flip8 (Open)</option>
+        <option value="412x960" data-cutout="punch">Galaxy Z Fold7 (Closed)</option>
+        <option value="750x832" data-cutout="punch">Galaxy Z Fold7 (Open)</option>
         <option value="768x1024">iPad</option>
         <option value="820x1180">iPad Air</option>
         <option value="744x1133">iPad mini 8.3-inch</option>
         <option value="834x1210">iPad Pro 11-inch</option>
         <option value="1032x1376">iPad Pro 13-inch</option>
+        <option value="320x568">iPhone 5</option>
         <option value="360x780" data-cutout="notch" data-home-indicator>iPhone 13 mini</option>
         <option value="402x874" data-cutout="island" data-home-indicator>iPhone 17</option>
         <option value="402x874" data-cutout="island" data-home-indicator>iPhone 17 Pro</option>
         <option value="440x956" data-cutout="island" data-home-indicator>iPhone 17 Pro Max</option>
         <option value="420x912" data-cutout="island" data-home-indicator>iPhone Air</option>
-        <option value="320x568">iPhone 5</option>
+        <option value="466x678" data-cutout="island">iPhone Duo (Closed)</option>
+        <option value="890x626" data-cutout="island">iPhone Duo (Open)</option>
         <option value="375x667">iPhone SE</option>
         <option value="412x915" data-cutout="punch">Pixel 8</option>
         <option value="320x480">Small Phone</option>
-        <option value="1080x1920" data-cabinet>Casino Cabinet · 4-screen Portrait</option>
-        <option value="1920x1080" data-cabinet>Casino Cabinet · 4-screen Landscape</option>
-        <option value="1280x1024" data-cabinet>Casino Cabinet · 4-screen 5:4</option>
         <option value="custom">Custom</option>
       </select>
     </label>
     <div class="custom" id="custom">
       <label><span>Width</span><input id="width" type="number" min="240" max="2000" value="390" /></label>
-      <label><span>Height</span><input id="height" type="number" min="320" max="2000" value="844" /></label>
+      <label><span>Height</span><input id="height" type="number" min="240" max="2000" value="844" /></label>
       <label><span>Cutout</span>
         <select id="custom-cutout">
           <option value="none">None</option>
@@ -185,7 +187,7 @@
 
     function resize(nextWidth, nextHeight) {
       const w = Math.max(240, Number(nextWidth) || 390);
-      const h = Math.max(320, Number(nextHeight) || 844);
+      const h = Math.max(240, Number(nextHeight) || 844);
       width.value = w;
       height.value = h;
       const isCabinet = preset.selectedOptions[0]?.hasAttribute('data-cabinet');

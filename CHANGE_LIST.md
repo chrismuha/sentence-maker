@@ -19,3 +19,4 @@
 ## 2026-11-06: foldable preview profiles
 
 - Foldable preview presets now use iPhone Duo sizes: 890 × 626 CSS pixels open and 466 × 678 closed. Separate Galaxy Z Fold7 presets provide 750 × 832 open and 412 × 960 closed. These replace the generic foldable presets; application layouts and controls are unchanged.
+- Device presets are alphabetized, with Current device first and Custom last. Galaxy Z Flip8 adds a 360 × 840 open-display preset and a 349 × 316 closed-cover test preset. iPhone Duo and Galaxy Z Fold7 keep their separate open and closed sizes.

@@ -27,8 +27,11 @@ In the development preview, choose a named device from Device:
 | Device | Open (CSS pixels) | Closed (CSS pixels) |
 | --- | --- | --- |
 | iPhone Duo | 890 × 626 | 466 × 678 |
+| Galaxy Z Flip8 | 360 × 840 | 349 × 316 (cover test) |
 | Galaxy Z Fold7 | 750 × 832 | 412 × 960 |
 
 Rotate swaps the selected width and height. These are display-sized CSS test presets; browser controls and display settings can change the usable page viewport. The iPhone Duo opens in landscape. Selecting a preset resizes the preview only; it does not rearrange application content.
 
 Dimensions: [Apple iPhone Duo specifications](https://www.apple.com/iphone-duo/specs/) (display pixels divided by 3), [Galaxy Z Fold7 open measurement](https://www.effectiveviewport.com/devices/samsung-galaxy-z-fold7-unfolded/), and [Galaxy Z Fold7 closed measurement](https://www.effectiveviewport.com/devices/samsung-galaxy-z-fold7-folded/).
+
+The Device list is alphabetical, with Current device first and Custom last. The Flip8 cover preset is a compact test approximation derived from Samsung’s display resolution at 3× density; usable cover-screen browser space can differ. [Samsung Galaxy Z Flip8 display specifications](https://www.samsung.com/sg/business/smartphones/galaxy-z/galaxy-z-flip8-cream-512gb-sm-f776bzwexsp/).
