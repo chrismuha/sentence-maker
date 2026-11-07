@@ -5,6 +5,7 @@ import os from 'node:os';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
+import metadata from './sanitize-build-metadata.cjs';
 
 const projectRoot=process.cwd();
 let packageName='mcr-app';
@@ -42,7 +43,7 @@ try{
 if(process.platform==='darwin'){
  const targets=["assets", "dist", "index.html", "main.js", "preload", "script", "styles.css"].map(file=>path.join(projectRoot,file)).filter(file=>fs.existsSync(file));
  for(const target of targets){try{if(fs.statSync(target).isDirectory())execFileSync('find',[target,'-name','._*','-delete'],{stdio:'ignore',timeout:30000});}catch{console.warn('Could not remove AppleDouble metadata before packaging.');}}
- try{if(targets.length)execFileSync('xattr',['-cr',...targets],{stdio:'ignore',timeout:30000});}catch{console.warn('Could not clear macOS metadata before packaging.');}
+ metadata.sanitizeBuildMetadata(targets);
 }
 console.log(`Packaging in a fresh local folder: ${buildDir}`);
 const child=spawn(executable,args,{cwd:projectRoot,stdio:['inherit','pipe','pipe'],detached:process.platform!=='win32',shell:process.platform==='win32'});

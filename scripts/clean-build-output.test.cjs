@@ -44,6 +44,33 @@ test('clean preserves custom placeholders in place while deleting generated outp
   const empty = path.join(root, 'empty-output');
   fs.mkdirSync(empty);
   cleanOutput(empty);
-  assert.equal(fs.existsSync(empty), false);
+  assert.equal(fs.existsSync(empty), true);
   assert.doesNotThrow(() => cleanOutput(empty));
+});
+
+test('clean preserves output and release platform folder identities across repeated runs', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'mcr-clean-identity-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  for (const output of ['dist', 'release']) {
+    const target = path.join(root, output);
+    fs.mkdirSync(target);
+    const retained = [target];
+    if (output === 'release') {
+      for (const platform of ['macos', 'windows', 'linux']) {
+        const directory = path.join(target, platform);
+        fs.mkdirSync(directory);
+        retained.push(directory);
+      }
+    }
+    const identities = retained.map(directory => fs.statSync(directory).ino);
+    for (let pass = 0; pass < 2; pass++) {
+      for (const directory of retained) {
+        fs.mkdirSync(path.join(directory, 'stale'), { recursive: true });
+        fs.writeFileSync(path.join(directory, 'stale/file'), 'generated');
+      }
+      cleanOutput(target);
+      assert.deepEqual(retained.map(directory => fs.statSync(directory).ino), identities);
+      for (const directory of retained) assert.equal(fs.existsSync(path.join(directory, 'stale')), false);
+    }
+  }
 });
