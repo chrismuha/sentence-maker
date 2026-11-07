@@ -137,8 +137,8 @@
 
     function auditLayout() {
       const root = appPreview.contentDocument;
-      if (!root) return;
-      const documents = getDocuments(root);
+      if (!root?.documentElement || !root.defaultView) return;
+      const documents = getDocuments(root).filter(doc => doc.documentElement);
       const overflows = documents.filter((doc) => {
         const element = doc.documentElement;
         return element.scrollWidth > element.clientWidth + 2;
@@ -148,7 +148,7 @@
         return element.scrollHeight - element.clientHeight;
       }));
       const widthStatus = overflows.length ? `⚠ ${overflows.length} horizontal overflow` : '✓ Width fits';
-      const heightStatus = verticalOverflow > 2 ? `Vertical scrolling: ${verticalOverflow}px` : 'Height fits';
+      const heightStatus = verticalOverflow > 2 ? `App scroll: ${verticalOverflow}px` : 'App height fits';
       const status = `${widthStatus} · ${heightStatus}`;
       if (audit.textContent !== status) audit.textContent = status;
       audit.title = 'Checks the app and embedded frames. Vertical scrolling shows the largest document height overflow; it may be intentional.';
@@ -255,5 +255,6 @@
     window.setInterval(auditLayout, 1500);
     applyPreset();
   </script>
+  <script type="module" src="./dev-preview-layout.js"></script>
 </body>
 </html>
