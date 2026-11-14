@@ -11,3 +11,9 @@ Keep documented issues, planned features, user guides, and release notes in sync
 ## Help access update · November 5, 2026
 
 Help uses the standard horizontal button in normal page flow. It occupies its own layout space and does not float over controls. Only Monopoly Deal uses the edge tab. The five Help sections and app version are unchanged.
+
+## Fixed issues and bug reports
+
+Open Help → Known issues to see documented problems and the Fixed section. Each completed fix can show its version, what happened, a **How we fixed it** explanation, and **What this means for you** notes. Only verified fixes belong here; an empty section means none are currently listed. Existing unresolved issues remain under Known issues.
+
+Use the small **🐛 Bug Report** button at the bottom of the Help window from any section. It opens Report an issue inside the same window, where you can prepare an email draft, review it, and send it from your email app. It never sends a report automatically. Close or Escape returns to the program.

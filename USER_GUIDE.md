@@ -35,3 +35,9 @@ Rotate swaps the selected width and height. These are display-sized CSS test pre
 Dimensions: [Apple iPhone Duo specifications](https://www.apple.com/iphone-duo/specs/) (display pixels divided by 3), [Galaxy Z Fold7 open measurement](https://www.effectiveviewport.com/devices/samsung-galaxy-z-fold7-unfolded/), and [Galaxy Z Fold7 closed measurement](https://www.effectiveviewport.com/devices/samsung-galaxy-z-fold7-folded/).
 
 The Device list is alphabetical, with Current device first and Custom last. The Flip8 cover preset is a compact test approximation derived from Samsung’s display resolution at 3× density; usable cover-screen browser space can differ. [Samsung Galaxy Z Flip8 display specifications](https://www.samsung.com/sg/business/smartphones/galaxy-z/galaxy-z-flip8-cream-512gb-sm-f776bzwexsp/).
+
+## Fixed issues and bug reports
+
+Open Help → Known issues to see documented problems and the Fixed section. Each completed fix can show its version, what happened, a **How we fixed it** explanation, and **What this means for you** notes. Only verified fixes belong here; an empty section means none are currently listed. Existing unresolved issues remain under Known issues.
+
+Use the small **🐛 Bug Report** button at the bottom of the Help window from any section. It opens Report an issue inside the same window, where you can prepare an email draft, review it, and send it from your email app. It never sends a report automatically. Close or Escape returns to the program.

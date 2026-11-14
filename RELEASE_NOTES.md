@@ -1,5 +1,13 @@
 # Sentence Maker release notes
 
+## 1.0.0 — TBD
+
+### Help and support
+
+- Added a compact Bug Report button with a bug icon inside Help that opens the issue-report instructions and email template.
+- Added a Fixed section in Help Known issues with How we fixed it explanations and user-facing notes for completed fixes.
+
+
 ## November 4, 2026 — Help access
 
 - Kept Help in its existing inline location and added support for compact edge placement to the shared Help component.

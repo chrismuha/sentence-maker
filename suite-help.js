@@ -3,6 +3,7 @@ import packageInfo from './package.json';
 import styles from './suite-help.css?inline';
 const escape = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const articles = entries => entries.map(entry => `<article><h3>${escape(entry.title)}</h3><p>${escape(entry.description)}</p></article>`).join('');
+const fixedArticles = entries => entries.map(entry => `<article><h3>${escape(entry.title)}</h3>${entry.version ? `<p>Fixed in version ${escape(entry.version)}</p>` : ''}<p>${escape(entry.description)}</p><p><strong>How we fixed it:</strong> ${escape(entry.resolution || '')}</p>${entry.userNotes ? `<p><strong>What this means for you:</strong> ${escape(entry.userNotes)}</p>` : ''}</article>`).join('');
 const sections = [['contact','Contact us'],['report','Report an issue'],['known','Known issues'],['coming','Coming soon'],['tips','Tips & troubleshooting']];
 class SuiteHelp extends HTMLElement {
   connectedCallback() {
@@ -36,10 +37,11 @@ class SuiteHelp extends HTMLElement {
           </div>
           <p>Email and phone links open your device’s email or phone app.</p></section>
           <section data-section="report" hidden><h2>Report an issue</h2><p>Tell us the screen, steps to reproduce, expected result, actual result, exact error, device, and operating system. Include whether the problem happens every time.</p><a class="suite-help-report" href="${escape(reportUrl)}">Prepare issue report email</a><p>This opens an email draft with the current version and a report template. Review it and send it from your email app. If the link does not open, email muhachris297@gmail.com with those details.</p><p>Remove customer, financial, and other private information from screenshots or attachments.</p></section>
-          <section data-section="known" hidden><h2>Known issues</h2><p>Confirmed problems documented for this version appear here.</p>${articles(details.knownIssues)}${details.knownIssues.length?'':'<p>No confirmed issues are currently listed in this version’s Help. If you encounter a problem, use Report an issue.</p>'}<p>Use Report an issue to share a problem you encounter.</p></section>
+          <section data-section="known" hidden><h2>Known issues</h2><p>Confirmed problems documented for this version appear here.</p>${articles(details.knownIssues)}${details.knownIssues.length?'':'<p>No confirmed issues are currently listed in this version’s Help. If you encounter a problem, use Report an issue.</p>'}<h2 class="suite-help-fixed-heading">Fixed</h2><p>Completed fixes and what they mean for you.</p>${details.fixedIssues?.length ? fixedArticles(details.fixedIssues) : '<p>No completed fixes are currently listed here. See Release Notes for the full change history.</p>'}<p>Use Bug Report to share a problem you encounter.</p></section>
           <section data-section="coming" hidden><h2>Coming soon</h2><p>Planned features are not available yet.</p>${articles(details.comingSoon || [])}${details.comingSoon?.length?'':'<p>No upcoming features are currently listed. See the user guide and release notes for available features.</p>'}</section>
           <section data-section="tips" hidden><h2>Tips &amp; troubleshooting</h2>${articles(details.usageTips)}${details.troubleshooting.length?'<h3>Troubleshooting checklist</h3><ul>'+details.troubleshooting.map(tip=>`<li>${escape(tip)}</li>`).join('')+'</ul>':''}<p>If the problem continues, use Report an issue and include the exact error and steps.</p></section>
         </main>
+        <footer class="suite-help-footer"><button type="button" class="suite-help-bug-report" data-page="report"><span aria-hidden="true">🐛</span> Bug Report</button></footer>
       </dialog>`;
     const dialog = root.querySelector('dialog');
     const trigger = root.querySelector('.suite-help-trigger');
